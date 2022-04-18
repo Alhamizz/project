@@ -5,27 +5,31 @@ import './App.css';
 
 class App extends Component {
 
-  componentDidMount() {
-      this.interval = setInterval(() => { 
-      var year = 0;
-      var month = 0;
-      var day = 0;
-      var hour = 0;
-      var minute = 0;
-      var second = 0;
+  async countdown(years, months, days, hours, minutes, seconds){
+    this.setState({ years, months, days, hours, minutes, seconds});
 
+    this.interval = setInterval(() => { 
+      
       var date1 = new Date();
       var date2 = new Date(this.state.years, this.state.months, this.state.days, this.state.hours, this.state.minutes, this.state.seconds);
       const diff = new Date(date2.getTime() - date1.getTime());
 
-      year = diff.getUTCFullYear() - 1970;
-      month = diff.getUTCMonth();
-      day = diff.getUTCDate() - 1;
-      hour = diff.getUTCHours();
-      minute = diff.getUTCMinutes();
-      second = diff.getUTCSeconds();
+      var year = diff.getUTCFullYear() - 1970;
+      var month = diff.getUTCMonth();
+      var day = diff.getUTCDate() - 1;
+      var hour = diff.getUTCHours();
+      var minute = diff.getUTCMinutes();
+      var second = diff.getUTCSeconds();
 
-      
+      if (diff < 0){
+        year = 0;
+        month = 0;
+        day = 0;
+        hour = 0;
+        minute = 0;
+        second = 0;
+      }
+   
       this.setState({ year, month, day, hour, minute, second});
       //console.log(diff.getUTCDate())
       //console.log(date1.getUTCDate())
@@ -33,15 +37,7 @@ class App extends Component {
     }, 1000);
   }
 
-  componentWillUnmount() {
-    if (this.interval) {
-        clearInterval(this.interval);
-    }
-  }
-
-  async countdown(years, months, days, hours, minutes, seconds){
-    this.setState({ years, months, days, hours, minutes, seconds});
-  }
+  
   
   async pinata(name, strength){   
     const pinataApiKey = "5b4324fda5106b24845f";
@@ -155,12 +151,12 @@ class App extends Component {
     this.state = {
 
       selectedFile: null,
-      years: '0',
-      months: '0',
-      days: '0',
-      hours: '0',
-      minutesB: '0',
-      seconds: '0',
+      year: '0',
+      month: '0',
+      day: '0',
+      hour: '0',
+      minute: '0',
+      second: '0',
       name: 'undefined',
       strength: 'undefined'
       }
@@ -221,6 +217,8 @@ class App extends Component {
                                       ref={(input) => { this.months = input }}
                                       className="form-control form-control-sm"
                                       placeholder='1-12..'
+                                      min="1" 
+                                      max="12"
                                       required />
 
                                     <label htmlFor="Day" style={{float: "left"}}>Day (1-31):</label>
@@ -230,6 +228,8 @@ class App extends Component {
                                       ref={(input) => { this.days = input }}
                                       className="form-control form-control-sm"
                                       placeholder='1-31..'
+                                      min="1" 
+                                      max="31"
                                       required />
 
                                     <label htmlFor="Hour" style={{float: "left"}}>Hour (0-23):</label>
@@ -239,6 +239,8 @@ class App extends Component {
                                       ref={(input) => { this.hours = input }}
                                       className="form-control form-control-sm"
                                       placeholder='0-23..'
+                                      min="0" 
+                                      max="23"
                                       required />
                                       
                                     <label htmlFor="Minute" style={{float: "left"}}>Minute (0-59)</label>
@@ -248,6 +250,8 @@ class App extends Component {
                                       ref={(input) => { this.minutes = input }}
                                       className="form-control form-control-sm"
                                       placeholder='0-59..'
+                                      min="0" 
+                                      max="59"
                                       required />
 
                                     <label htmlFor="Second" style={{float: "left"}}>Second (0-59):</label>
@@ -257,6 +261,8 @@ class App extends Component {
                                       ref={(input) => { this.seconds = input }}
                                       className="form-control form-control-sm"
                                       placeholder='0-59..'
+                                      min="0" 
+                                      max="59"
                                       required />
 
                                   </div>
