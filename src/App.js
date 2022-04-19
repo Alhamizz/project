@@ -5,23 +5,41 @@ import './App.css';
 
 class App extends Component {
 
-  async countdown(years, months, days, hours, minutes, seconds){
-    this.setState({ years, months, days, hours, minutes, seconds});
+  async countdown(datetime){
+
+    /*var date2 = null;
+    this.state.i = this.state.i + 1;
+    
+    if (this.state.i === 2){
+      this.state.i = 1;
+      date2 = null;
+    }
+    console.log(date2)  
+    //console.log(this.state.input) */
 
     this.interval = setInterval(() => { 
-      
       var date1 = new Date();
-      var date2 = new Date(this.state.years, this.state.months, this.state.days, this.state.hours, this.state.minutes, this.state.seconds);
-      const diff = new Date(date2.getTime() - date1.getTime());
+      var date2 = new Date(datetime);
+      //console.log(date2) 
 
-      var year = diff.getUTCFullYear() - 1970;
-      var month = diff.getUTCMonth();
-      var day = diff.getUTCDate() - 1;
-      var hour = diff.getUTCHours();
-      var minute = diff.getUTCMinutes();
-      var second = diff.getUTCSeconds();
+      const  dif = new Date(date2.getTime() - date1.getTime());
+      console.log(dif)
 
-      if (diff < 0){
+      var year = dif.getUTCFullYear() - 1970;
+      var month = dif.getUTCMonth() ;
+      var day = dif.getUTCDate() - 1;
+      var hour = dif.getUTCHours() ;
+      var minute = dif.getUTCMinutes() ;
+      var second = dif.getUTCSeconds();
+
+      console.log(dif.getUTCFullYear())
+      console.log(dif.getUTCMonth())
+      console.log(dif.getUTCDate())
+      console.log(dif.getUTCDay())
+      console.log(minute)
+      console.log(second)
+
+      if (dif < 0){
         year = 0;
         month = 0;
         day = 0;
@@ -29,13 +47,10 @@ class App extends Component {
         minute = 0;
         second = 0;
       }
-   
+    
       this.setState({ year, month, day, hour, minute, second});
-      //console.log(diff.getUTCDate())
-      //console.log(date1.getUTCDate())
-
     }, 1000);
-  }
+}
 
   
   
@@ -149,7 +164,8 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-
+      i : null,
+      input: null,
       selectedFile: null,
       year: '0',
       month: '0',
@@ -189,81 +205,21 @@ class App extends Component {
                               Input Date and Time?
                                 <form onSubmit={(e) => {
                                   e.preventDefault()
-                                  let years = this.years.value
-                                  let months = this.months.value - 1
-                                  let days = this.days.value
-                                  let hours = this.hours.value 
-                                  let minutes = this.minutes.value
-                                  let seconds = this.seconds.value
+                                  let datetime = this.datetime.value
                                   
-                                  this.countdown(years, months, days, hours, minutes, seconds)
+                                  this.countdown(datetime)
                                 
                                 }}>
                                   <div className='form-group mr-sm-2'>
 
-                                    <label htmlFor="Year" style={{float: "left"}}>Year:</label>
+                                    <label htmlFor="DateTime" style={{float: "left"}}>Date & Time:</label>
                                     <input
-                                      id='Year'
-                                      type='number'
-                                      ref={(input) => { this.years = input }}
+                                      id='DateTime'
+                                      type='datetime-local'
+                                      ref={(input) => { this.datetime = input }}
                                       className="form-control form-control-sm"
-                                      placeholder='2000..'
-                                      required />
-
-                                    <label htmlFor="Month" style={{float: "left"}}>Month (1-12):</label>
-                                    <input
-                                      id='Month'
-                                      type='number'
-                                      ref={(input) => { this.months = input }}
-                                      className="form-control form-control-sm"
-                                      placeholder='1-12..'
-                                      min="1" 
-                                      max="12"
-                                      required />
-
-                                    <label htmlFor="Day" style={{float: "left"}}>Day (1-31):</label>
-                                    <input
-                                      id='Day'
-                                      type='number'
-                                      ref={(input) => { this.days = input }}
-                                      className="form-control form-control-sm"
-                                      placeholder='1-31..'
-                                      min="1" 
-                                      max="31"
-                                      required />
-
-                                    <label htmlFor="Hour" style={{float: "left"}}>Hour (0-23):</label>
-                                    <input
-                                      id='Hour'
-                                      type='number'
-                                      ref={(input) => { this.hours = input }}
-                                      className="form-control form-control-sm"
-                                      placeholder='0-23..'
-                                      min="0" 
-                                      max="23"
-                                      required />
-                                      
-                                    <label htmlFor="Minute" style={{float: "left"}}>Minute (0-59)</label>
-                                    <input
-                                      id='Minute'
-                                      type='number'
-                                      ref={(input) => { this.minutes = input }}
-                                      className="form-control form-control-sm"
-                                      placeholder='0-59..'
-                                      min="0" 
-                                      max="59"
-                                      required />
-
-                                    <label htmlFor="Second" style={{float: "left"}}>Second (0-59):</label>
-                                    <input
-                                      id='Second'
-                                      type='number'
-                                      ref={(input) => { this.seconds = input }}
-                                      className="form-control form-control-sm"
-                                      placeholder='0-59..'
-                                      min="0" 
-                                      max="59"
-                                      required />
+                                      placeholder='dd/mm/yyyy'
+                                      required />   
 
                                   </div>
                                   <button type='submit' className='btn btn-primary'>Countdown</button>
