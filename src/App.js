@@ -228,7 +228,7 @@ class App extends Component {
 
   render() {
 
-    const monthsRadius = mapNumber(this.state.day, 12, 0, 0, 360);
+    const monthsRadius = mapNumber(this.state.month, 12, 0, 0, 360);
     const daysRadius = mapNumber(this.state.day, 30, 0, 0, 360);
     const hoursRadius = mapNumber(this.state.hour, 24, 0, 0, 360);
     const minutesRadius = mapNumber(this.state.minute, 60, 0, 0, 360);
