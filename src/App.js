@@ -57,23 +57,21 @@ class App extends Component {
 
   async countdown(datetime){
 
-    /*var date2 = null;
     this.state.i = this.state.i + 1;
     
     if (this.state.i === 2){
       this.state.i = 1;
-      date2 = null;
+      clearInterval(this.interval);
     }
-    console.log(date2)  
-    //console.log(this.state.input) */
+    console.log(this.state.i) 
 
     this.interval = setInterval(() => { 
-      var date1 = new Date();
-      var date2 = new Date(datetime);
+      const date1 = new Date();
+      const date2 = new Date(datetime);
       //console.log(date2) 
 
       const  dif = new Date(date2.getTime() - date1.getTime());
-      console.log(dif)
+      //console.log(dif)
 
       var year = dif.getUTCFullYear() - 1970;
       var month = dif.getUTCMonth() ;
@@ -82,12 +80,12 @@ class App extends Component {
       var minute = dif.getUTCMinutes() ;
       var second = dif.getUTCSeconds();
 
-      console.log(dif.getUTCFullYear())
+      /*console.log(dif.getUTCFullYear())
       console.log(dif.getUTCMonth())
       console.log(dif.getUTCDate())
       console.log(dif.getUTCDay())
       console.log(minute)
-      console.log(second)
+      console.log(second)*/
 
       if (dif < 0){
         year = 0;
