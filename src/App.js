@@ -3,6 +3,56 @@ import { Tabs, Tab } from 'react-bootstrap';
 import React, {Component } from "react";
 import './App.css';
 
+
+function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+  var angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+
+  return {
+      x: centerX + radius * Math.cos(angleInRadians),
+      y: centerY + radius * Math.sin(angleInRadians)
+  };
+}
+
+function describeArc(x, y, radius, startAngle, endAngle) {
+  var start = polarToCartesian(x, y, radius, endAngle);
+  var end = polarToCartesian(x, y, radius, startAngle);
+
+  var largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+
+  var d = [
+      'M',
+      start.x,
+      start.y,
+      'A',
+      radius,
+      radius,
+      0,
+      largeArcFlag,
+      0,
+      end.x,
+      end.y
+  ].join(' ');
+
+  return d;
+}
+
+function mapNumber(number, in_min, in_max, out_min, out_max) {
+  return (
+      ((number - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min
+  );
+}
+
+const SVGCircle = ({ radius }) => (
+  <svg className="countdown-svg">
+      <path
+          fill="none"
+          stroke="#333"
+          stroke-width="4"
+          d={describeArc(50, 50, 48, 0, radius)}
+      />
+  </svg>
+);
+
 class App extends Component {
 
   async countdown(datetime){
@@ -50,10 +100,8 @@ class App extends Component {
     
       this.setState({ year, month, day, hour, minute, second});
     }, 1000);
-}
-
-  
-  
+  }
+   
   async pinata(name, strength){   
     const pinataApiKey = "5b4324fda5106b24845f";
     const pinataSecretApiKey = "446cc7cb18e03f24097bf3fa3e20aa1a2dd23630df3e41a476b344ed8d5cc871";
@@ -179,6 +227,12 @@ class App extends Component {
   }
 
   render() {
+
+    const monthsRadius = mapNumber(this.state.day, 12, 0, 0, 360);
+    const daysRadius = mapNumber(this.state.day, 30, 0, 0, 360);
+    const hoursRadius = mapNumber(this.state.hour, 24, 0, 0, 360);
+    const minutesRadius = mapNumber(this.state.minute, 60, 0, 0, 360);
+    const secondsRadius = mapNumber(this.state.second, 60, 0, 0, 360);
     return (
       <div className='text-monospace'>
           <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
@@ -234,10 +288,12 @@ class App extends Component {
                                         <span>years</span>
                                     </div>
                                     <div className="countdown-item">
+                                      <SVGCircle radius={monthsRadius} />
                                       {this.state.month}
                                         <span>months</span>
                                     </div>
                                     <div className="countdown-item">
+                                      <SVGCircle radius={daysRadius} />
                                       {this.state.day}
                                         <span>days</span>
                                     </div>
@@ -245,14 +301,17 @@ class App extends Component {
 
                                   <div className="countdown-wrapper">
                                     <div className="countdown-item">
+                                     <SVGCircle radius={hoursRadius} />
                                       {this.state.hour}
                                         <span>hours</span>
                                     </div>
                                     <div className="countdown-item">
+                                     <SVGCircle radius={minutesRadius} />
                                       {this.state.minute}
                                         <span>minutes</span>
                                     </div>
                                     <div className="countdown-item">
+                                     <SVGCircle radius={secondsRadius} />
                                       {this.state.second}
                                         <span>seconds</span>
                                     </div>
