@@ -2,7 +2,35 @@ import logo from './logo.svg';
 import { Tabs, Tab } from 'react-bootstrap';
 import React, {Component } from "react";
 import './App.css';
+import { Canvg } from 'https://cdn.skypack.dev/canvg';
 
+
+function svgToPng(svg, callback) {
+  const url = getSvgUrl(svg);
+  svgUrlToPng(url, (imgData) => {
+    callback(imgData);
+    URL.revokeObjectURL(url);
+  });
+}
+function getSvgUrl(svg) {
+  return URL.createObjectURL(new Blob([svg], {
+    type: 'image/svg+xml'
+  }));
+}
+function svgUrlToPng(svgUrl, callback) {
+  const svgImage = document.createElement('img');
+  document.body.appendChild(svgImage);
+  svgImage.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = svgImage.clientWidth;
+    canvas.height = svgImage.clientHeight;
+    const canvasCtx = canvas.getContext('2d');
+    canvasCtx.drawImage(svgImage, 0, 0);
+    const imgData = canvas.toDataURL('image/png');
+    callback(imgData);
+  };
+  svgImage.src = svgUrl;
+}
 
 function timeout(delay) {
   return new Promise( res => setTimeout(res, delay) );
@@ -339,24 +367,15 @@ class App extends Component {
   async getLayer0(backgroundnum, skip=0.0) {
 
     const data0 = this.state.background[backgroundnum]; 
-    //const blob = new Blob([data], {type: 'image/svg+xml'});
-    //const test = data.toString();
-    //console.log(data)
-    //console.log(test)
 
     const reader = new FileReader();
     reader.readAsText(data0);
     reader.onload = (e) => {
-      const layer0 = reader.result;
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer0 = svg.match(re)[0];
       this.setState({layer0});
     };
- 
-    //const re = "name"
-    //const layer0 = test.match(re);
-
-    //console.log(layer0)
-
-    //const layer0 = this.state.background[backgroundnum]; 
 
     return Math.random() > skip ? this.state.layer0 : '';
   }
@@ -367,7 +386,9 @@ class App extends Component {
     const reader = new FileReader();
     reader.readAsText(data1);
     reader.onload = (e) => {
-      const layer1 = reader.result;
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer1 = svg.match(re)[0];
       this.setState({layer1});
     };
     return Math.random() > skip ? this.state.layer1 : '';
@@ -379,7 +400,9 @@ class App extends Component {
     const reader = new FileReader();
     reader.readAsText(data2);
     reader.onload = (e) => {
-      const layer2 = reader.result;
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer2 = svg.match(re)[0];
       this.setState({layer2});
     };
     return Math.random() > skip ? this.state.layer2 : '';
@@ -391,7 +414,9 @@ class App extends Component {
     const reader = new FileReader();
     reader.readAsText(data3);
     reader.onload = (e) => {
-      const layer3 = reader.result;
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer3 = svg.match(re)[0];
       this.setState({layer3});
     };
     return Math.random() > skip ? this.state.layer3 : '';
@@ -403,7 +428,9 @@ class App extends Component {
     const reader = new FileReader();
     reader.readAsText(data4);
     reader.onload = (e) => {
-      const layer4 = reader.result;
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer4 = svg.match(re)[0];
       this.setState({layer4});
     };
     return Math.random() > skip ? this.state.layer4 : '';
@@ -415,7 +442,9 @@ class App extends Component {
     const reader = new FileReader();
     reader.readAsText(data5);
     reader.onload = (e) => {
-      const layer5 = reader.result;
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer5 = svg.match(re)[0];
       this.setState({layer5});
     };
     return Math.random() > skip ? this.state.layer5 : '';
@@ -427,7 +456,9 @@ class App extends Component {
     const reader = new FileReader();
     reader.readAsText(data6);
     reader.onload = (e) => {
-      const layer6 = reader.result;
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer6 = svg.match(re)[0];
       this.setState({layer6});
     };
     return Math.random() > skip ? this.state.layer6 : '';
@@ -467,7 +498,6 @@ class App extends Component {
       const name = await this.getRandomName()
       //console.log(name)
       face = face[takenFaces];
-
   
       const final = template
         .replace('<bg/>', backgroundResult)
@@ -483,7 +513,7 @@ class App extends Component {
       const meta = {
         name,
         description: `A drawing of ${name.split('-').join(' ')}`,
-        image: `${idx}.png`,
+        image: `${idx}.svg`,
         attributes: [
           { 
             beard: '',
@@ -493,7 +523,13 @@ class App extends Component {
       }
 
       await this.downloadFile(`${idx}.json`, JSON.stringify(meta))
-      await this.downloadFile(`${idx}.svg`, final)
+      await this.downloadFile(`${idx}.png`, final)
+
+      svgToPng(final, (imgData) => {
+        const pngImage = document.createElement('img');
+        document.body.appendChild(pngImage);
+        pngImage.src = imgData;
+      });
       
       }
   }
@@ -507,14 +543,6 @@ class App extends Component {
     link.click();
     console.log('succeed')
   }
-
-  /*async downloadFile(name, file) {
-    var data = file;
-    //var blob = new Blob([data], {type: 'image/svg+xml'});
-    var url  = window.URL.createObjectURL(data);
-    this.downloadURL(url, name);
-  }*/
-
 
   constructor(props) {
     super(props)
