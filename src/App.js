@@ -2,7 +2,6 @@ import logo from './logo.svg';
 import { Tabs, Tab } from 'react-bootstrap';
 import React, {Component } from "react";
 import './App.css';
-import { Canvg } from 'https://cdn.skypack.dev/canvg';
 
 
 function svgToPng(svg, callback) {
