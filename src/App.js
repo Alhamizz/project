@@ -4,6 +4,9 @@ import React, {Component } from "react";
 import './App.css';
 
 
+function timeout(delay) {
+  return new Promise( res => setTimeout(res, delay) );
+}
 
 function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
   var angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
@@ -166,14 +169,13 @@ class App extends Component {
   onFileChange = event => {     
     this.setState({ selectedFile: event.target.files[0] });
 
-    //console.log(this.state.headLength)
-    //console.log(this.state.eyesLength)
-    //console.log(this.state.head)
-    //console.log(this.state.eyes)
-    //console.log(this.state.nose)
-    //console.log(this.state.mouth)
-    //console.log(this.state.hair)
-    //console.log(this.state.beard)
+    let reader = new FileReader();
+    reader.onload = (e) => {
+      this.setState({image: e.target.result});
+    };
+    reader.readAsDataURL(event.target.files[0]);
+    console.log(this.state.abc)
+
   };
 
   fileData = () => {
@@ -214,6 +216,7 @@ class App extends Component {
 
       this.setState({background});
     }
+    //console.log(background[0])
   };
 
   inputHead = event => {
@@ -226,6 +229,7 @@ class App extends Component {
 
       this.setState({head});
     }
+    //console.log(head[0])
   };
 
   inputEyes = event => {
@@ -238,6 +242,7 @@ class App extends Component {
 
       this.setState({eyes});
     }
+    //console.log(eyes[0])
   };
 
   inputNose = event => {
@@ -250,6 +255,7 @@ class App extends Component {
 
       this.setState({nose});
     }
+    //console.log(nose[0])
   };
 
   inputMouth = event => {
@@ -262,6 +268,7 @@ class App extends Component {
 
       this.setState({mouth});
     }
+    //console.log(mouth[0])
   };
 
   inputHair = event => {
@@ -274,6 +281,7 @@ class App extends Component {
 
       this.setState({hair});
     }
+    //console.log(hair[0])
   };
 
   inputBeard = event => {
@@ -286,42 +294,38 @@ class App extends Component {
 
       this.setState({beard});
     }
+    //console.log(beard[0])
   };
 
   async generate(){  
 
     //const max = 0;
     //const arr = {};
-    let idx = 999;
-
-    //await this.createImage();
-    //this.randElement(arr);
-    //this.getRandomName();
-
+    let idx = 19;
 
     do {
-      this.createImage(idx);
+      await this.createImage(idx);
+      await timeout(200); //for 0.2 sec delay
       idx--;
     } while (idx >= 0);
   }
 
   async randInt(max ) {
-    return Math.floor(Math.random() * (max + 1));
+    return Math.floor(Math.random() * (max));
   }
 
   async randElement(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
-
   async getRandomName() {
     const takenNames = {};
         const adjectives = 'fired trashy tubular nasty jacked swol buff ferocious firey flamin agnostic artificial bloody crazy cringey crusty dirty eccentric glutinous harry juicy simple stylish awesome creepy corny freaky shady sketchy lame sloppy hot intrepid juxtaposed killer ludicrous mangy pastey ragin rusty rockin sinful shameful stupid sterile ugly vascular wild young old zealous flamboyant super sly shifty trippy fried injured depressed anxious clinical'.split(' ');
         const names = 'aaron bart chad dale earl fred grady harry ivan jeff joe kyle lester steve tanner lucifer todd mitch hunter mike arnold norbert olaf plop quinten randy saul balzac tevin jack ulysses vince will xavier yusuf zack roger raheem rex dustin seth bronson dennis'.split(' ');
         
-        const randAdj = this.randElement(adjectives);
-        const randName = this.randElement(names);
-        const name =  `${randAdj}-${randName}`;
+        const randAdj = await this.randElement(adjectives);
+        const randName = await this.randElement(names);
+        const name = `${randAdj}-${randName}`;
 
 
         if (takenNames[name] || !name) {
@@ -334,99 +338,182 @@ class App extends Component {
 
   async getLayer0(backgroundnum, skip=0.0) {
 
-    const layer = await this.state.background[backgroundnum];
-    //console.log(backgroundnum)
-    //console.log(layer)
+    const data0 = this.state.background[backgroundnum]; 
+    //const blob = new Blob([data], {type: 'image/svg+xml'});
+    //const test = data.toString();
+    //console.log(data)
+    //console.log(test)
 
-    return Math.random() > skip ? layer : '';
+    const reader = new FileReader();
+    reader.readAsText(data0);
+    reader.onload = (e) => {
+      const layer0 = reader.result;
+      this.setState({layer0});
+    };
+ 
+    //const re = "name"
+    //const layer0 = test.match(re);
+
+    //console.log(layer0)
+
+    //const layer0 = this.state.background[backgroundnum]; 
+
+    return Math.random() > skip ? this.state.layer0 : '';
   }
 
   async getLayer1(headnum, skip=0.0) {
 
-    var layer = await this.state.head[headnum]; 
-    return Math.random() > skip ? layer : '';
+    const data1 = this.state.head[headnum]; 
+    const reader = new FileReader();
+    reader.readAsText(data1);
+    reader.onload = (e) => {
+      const layer1 = reader.result;
+      this.setState({layer1});
+    };
+    return Math.random() > skip ? this.state.layer1 : '';
   }
 
   async getLayer2(eyesnum, skip=0.0) {
 
-    var layer = await this.state.eyes[eyesnum];
-    return Math.random() > skip ? layer : '';
+    const data2 = this.state.eyes[eyesnum];
+    const reader = new FileReader();
+    reader.readAsText(data2);
+    reader.onload = (e) => {
+      const layer2 = reader.result;
+      this.setState({layer2});
+    };
+    return Math.random() > skip ? this.state.layer2 : '';
   }
 
   async getLayer3(nosenum, skip=0.0) {
 
-    var layer = await this.state.nose[nosenum];
-    return Math.random() > skip ? layer : '';
+    const data3 = this.state.nose[nosenum];
+    const reader = new FileReader();
+    reader.readAsText(data3);
+    reader.onload = (e) => {
+      const layer3 = reader.result;
+      this.setState({layer3});
+    };
+    return Math.random() > skip ? this.state.layer3 : '';
   }
 
   async getLayer4(mouthnum, skip=0.0) {
 
-    var layer = await this.state.mouth[mouthnum];
-    return Math.random() > skip ? layer : '';
+    const data4 = this.state.mouth[mouthnum];
+    const reader = new FileReader();
+    reader.readAsText(data4);
+    reader.onload = (e) => {
+      const layer4 = reader.result;
+      this.setState({layer4});
+    };
+    return Math.random() > skip ? this.state.layer4 : '';
   }
 
   async getLayer5(hairnum, skip=0.0) {
 
-    var layer = await this.state.hair[hairnum];
-    return Math.random() > skip ? layer : '';
+    const data5 = this.state.hair[hairnum];
+    const reader = new FileReader();
+    reader.readAsText(data5);
+    reader.onload = (e) => {
+      const layer5 = reader.result;
+      this.setState({layer5});
+    };
+    return Math.random() > skip ? this.state.layer5 : '';
   }
 
   async getLayer6(beardnum, skip=0.0) {
 
-    var layer = await this.state.beard[beardnum]; 
-    return Math.random() > skip ? layer : '';
+    const data6 = this.state.beard[beardnum]; 
+    const reader = new FileReader();
+    reader.readAsText(data6);
+    reader.onload = (e) => {
+      const layer6 = reader.result;
+      this.setState({layer6});
+    };
+    return Math.random() > skip ? this.state.layer6 : '';
   }
   
   async createImage(idx) {
 
     const template = `
       <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- bg -->
-          <!-- head -->
-          <!-- hair -->
-          <!-- eyes -->
-          <!-- nose -->
-          <!-- mouth -->
-          <!-- beard -->
+          <bg/>
+          <head/>
+          <eyes/>
+          <nose/>
+          <mouth/>
+          <hair/>
+          <beard/>
       </svg>
     ` 
 
-      const background = await this.randInt(this.state.backgroundLength)
-      const head = await this.randInt(this.state.headLength);
-      const hair = await this.randInt(this.state.hairLengt);
-      const eyes = await this.randInt(this.state.eyesLength);
-      const nose = await this.randInt(this.state.noseLength); 
-      const mouth = await this.randInt(this.state.mouthLength);
-      const beard = await this.randInt(this.state.beardLength);
+    const backgroundResult = await this.getLayer0(await this.randInt(this.state.backgroundLength));
+    const headResult = await this.getLayer1(await this.randInt(this.state.headLength));
+    const eyesResult =  await this.getLayer2(await this.randInt(this.state.eyesLength));
+    const noseResult =  await this.getLayer3(await this.randInt(this.state.noseLength));
+    const mouthResult = await this.getLayer4(await this.randInt(this.state.mouthLength));
+    const hairResult = await this.getLayer5(await this.randInt(this.state.hairLength));
+    const beardResult = await this.getLayer6(await this.randInt(this.state.beardLength));
 
-      var takenFaces = {};
-      var face = []
+    var takenFaces = {};
 
-      // 18,900 combinations
+    // 18,900 combinations
   
-      face = [hair, eyes, mouth, nose, beard].join('');
+    var face = [eyesResult, noseResult, mouthResult, hairResult, beardResult].join('');
   
-      if (face[takenFaces]) {
-          this.createImage();
-      } else {
-          //const name = this.getRandomName()
-          //console.log(name)
-          face = face[takenFaces];
-  
-          const final = template
-              .replace('<!-- bg -->', await this.getLayer0(background))
-              .replace('<!-- head -->', await this.getLayer1(head))
-              .replace('<!-- hair -->', await this.getLayer2(hair))
-              .replace('<!-- eyes -->', await this.getLayer3(eyes))
-              .replace('<!-- nose -->', await this.getLayer4(nose))
-              .replace('<!-- mouth -->', await this.getLayer5(mouth))
-              .replace('<!-- beard -->', await this.getLayer6(beard, 0.5))
-  
+    if (face[takenFaces]) {
+      this.createImage();
+    } else {
+      const name = await this.getRandomName()
+      //console.log(name)
+      face = face[takenFaces];
 
-           console.log(final)
-        
+  
+      const final = template
+        .replace('<bg/>', backgroundResult)
+        .replace('<head/>', headResult)
+        .replace('<eyes/>', eyesResult)     
+        .replace('<nose/>', noseResult)
+        .replace('<mouth/>', mouthResult)
+        .replace('<hair/>', hairResult)
+        .replace('<beard/>', beardResult)
+  
+      //console.log(final)
+
+      const meta = {
+        name,
+        description: `A drawing of ${name.split('-').join(' ')}`,
+        image: `${idx}.png`,
+        attributes: [
+          { 
+            beard: '',
+            rarity: 0.5
+          }
+        ]
+      }
+
+      await this.downloadFile(`${idx}.json`, JSON.stringify(meta))
+      await this.downloadFile(`${idx}.svg`, final)
+      
       }
   }
+
+ async downloadFile(name, file) {
+    var link = document.createElement("a");
+    var blob = new Blob([file], {type: 'image/svg+xml'});
+    var url  = window.URL.createObjectURL(blob);
+    link.setAttribute('download', name);
+    link.setAttribute('href', url);
+    link.click();
+    console.log('succeed')
+  }
+
+  /*async downloadFile(name, file) {
+    var data = file;
+    //var blob = new Blob([data], {type: 'image/svg+xml'});
+    var url  = window.URL.createObjectURL(data);
+    this.downloadURL(url, name);
+  }*/
 
 
   constructor(props) {
@@ -443,6 +530,13 @@ class App extends Component {
       second: '0',
       name: 'undefined',
       strength: 'undefined',
+      layer0: 'undefined',
+      layer1: 'undefined',
+      layer2: 'undefined',
+      layer3: 'undefined',
+      layer4: 'undefined',
+      layer5: 'undefined',
+      layer6: 'undefined',
       background: 'undefined',
       head: 'undefined',
       eyes: 'undefined',
@@ -584,6 +678,7 @@ class App extends Component {
                                         <h4>
                                           Image Upload 
                                         </h4>
+                                        <img id="target" src={this.state.image}/>
                                         <div>
                                             <input type="file" onChange={this.onFileChange} />
                                         </div>
@@ -620,7 +715,7 @@ class App extends Component {
                             <Tab eventKey="NFT Factory" title="NFT Factory">
 
                               <div>  
-                                <br></br>  
+                                <br></br> 
 
                                 <form method="post" encType="multipart/form-data" action="#" onSubmit={(e) => {
                                   e.preventDefault()   
