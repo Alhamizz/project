@@ -5,7 +5,7 @@ import './App.css';
 
 
 function svgToPng(svg, callback) {
-  const url = getSvgUrl(svg);
+  const url = getSvgUrl(svg)
   svgUrlToPng(url, (imgData) => {
     callback(imgData);
     URL.revokeObjectURL(url);
@@ -27,6 +27,7 @@ function svgUrlToPng(svgUrl, callback) {
     canvasCtx.drawImage(svgImage, 0, 0);
     const imgData = canvas.toDataURL('image/png');
     callback(imgData);
+    document.body.removeChild(svgImage);
   };
   svgImage.src = svgUrl;
 }
@@ -332,7 +333,7 @@ class App extends Component {
 
     do {
       await this.createImage(idx);
-      await timeout(200); //for 0.2 sec delay
+      await timeout(300); //for 0.2 sec delay
       idx--;
     } while (idx >= 0);
   }
@@ -521,21 +522,34 @@ class App extends Component {
         ]
       }
 
-      await this.downloadFile(`${idx}.json`, JSON.stringify(meta))
-      await this.downloadFile(`${idx}.png`, final)
-
       svgToPng(final, (imgData) => {
         const pngImage = document.createElement('img');
-        document.body.appendChild(pngImage);
         pngImage.src = imgData;
-      });
-      
+        document.body.appendChild(pngImage);
+        const result = pngImage.src;
+        var blob = new Blob([result]);
+        const reader = new FileReader();
+        reader.readAsText(blob);
+        reader.onload = (e) => {
+          const png = reader.result;
+          //console.log(reader)
+          //console.log(png)
+          this.setState({png});
+        }
+
+      }); 
+
+
+      await this.downloadFile(`${idx}.svg`, final)
+      await this.downloadFile(`${idx}.png`, await this.state.png)
+      await this.downloadFile(`${idx}.json`, JSON.stringify(meta))
+
       }
   }
 
  async downloadFile(name, file) {
     var link = document.createElement("a");
-    var blob = new Blob([file], {type: 'image/svg+xml'});
+    var blob = new Blob([file]);
     var url  = window.URL.createObjectURL(blob);
     link.setAttribute('download', name);
     link.setAttribute('href', url);
