@@ -3,7 +3,6 @@ import { Tabs, Tab } from 'react-bootstrap';
 import React, {Component } from "react";
 import './App.css';
 
-
 function svgToPng(svg, callback) {
   const url = getSvgUrl(svg)
   svgUrlToPng(url, (imgData) => {
@@ -325,17 +324,51 @@ class App extends Component {
     //console.log(beard[0])
   };
 
-  async generate(){  
+  async generate(description, url){  
 
     //const max = 0;
     //const arr = {};
-    let idx = 19;
+    let idx = 20;
+
+      var brd = document.getElementById("board");
+      var tbl = document.createElement("table");
+      var tblBody = document.createElement("tbody");
+      var row = document.createElement("tr");
+      var i = 0;
+    
 
     do {
-      await this.createImage(idx);
-      await timeout(300); //for 0.2 sec delay
+
+      await this.createImage(idx, description, url);
+      await timeout(1000); //for 0.2 sec delay
+
+      if ( i === 0 || i === 6 ){
+        i = 1;
+        row = document.createElement("tr");
+        cell = document.createElement("td");
+        cell.innerHTML = `<img src=${this.state.result}  />`;  
+        row.appendChild(cell);
+        tblBody.appendChild(row);        
+        tbl.appendChild(tblBody);
+        brd.appendChild(tbl);
+        console.log('1')
+
+      }else {
+        i = i + 1;
+        var cell = document.createElement("td");
+        cell.innerHTML = `<img src=${this.state.result}  />`;
+        row.appendChild(cell);
+        tblBody.appendChild(row);        
+        tbl.appendChild(tblBody);
+        brd.appendChild(tbl);
+        console.log('0')
+      }
+
+ 
       idx--;
     } while (idx >= 0);
+
+
   }
 
   async randInt(max ) {
@@ -464,7 +497,7 @@ class App extends Component {
     return Math.random() > skip ? this.state.layer6 : '';
   }
   
-  async createImage(idx) {
+  async createImage(idx, description, url) {
 
     const template = `
       <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -512,21 +545,23 @@ class App extends Component {
 
       const meta = {
         name,
-        description: `A drawing of ${name.split('-').join(' ')}`,
+        description: `${description} ${name.split('-').join(' ')}`,
         image: `${idx}.svg`,
+        ipfsHash : ``,
+        external_url : `${url}`,
         attributes: [
           { 
             beard: '',
             rarity: 0.5
           }
         ]
-      }
+      } 
 
       svgToPng(final, (imgData) => {
         const pngImage = document.createElement('img');
         pngImage.src = imgData;
-        document.body.appendChild(pngImage);
         const result = pngImage.src;
+        this.setState({result});
         var blob = new Blob([result]);
         const reader = new FileReader();
         reader.readAsText(blob);
@@ -536,9 +571,7 @@ class App extends Component {
           //console.log(png)
           this.setState({png});
         }
-
       }); 
-
 
       await this.downloadFile(`${idx}.svg`, final)
       await this.downloadFile(`${idx}.png`, await this.state.png)
@@ -560,7 +593,7 @@ class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      i : null,
+      i : 0,
       input: null,
       selectedFile: null,
       year: '0',
@@ -584,7 +617,8 @@ class App extends Component {
       nose: 'undefined',
       mouth: 'undefined',
       hair: 'undefined',
-      beard: 'undefined'
+      beard: 'undefined',
+      imgData: []
       }
   }
 
@@ -757,10 +791,13 @@ class App extends Component {
 
                               <div>  
                                 <br></br> 
+                                <h5>Input Layers (folder):</h5>   
 
                                 <form method="post" encType="multipart/form-data" action="#" onSubmit={(e) => {
-                                  e.preventDefault()   
-                                  this.generate();  
+                                  e.preventDefault()  
+                                  let description = this.Description.value
+                                  let url = this.Url.value
+                                  this.generate(description, url);  
                                  
                                 }}>
                                   <label htmlFor="Background" style={{float: "left"}}>Background:</label>
@@ -834,7 +871,33 @@ class App extends Component {
                                         className="form-control form-control-md"/> 
 
                                   <br></br>
+                                  <h5>Metadata:</h5>   
+
+                                  <label htmlFor="Description" style={{float: "left"}}>Description:</label> 
+                                    <input
+                                      id='Description' 
+                                      type='text'
+                                      ref={(input) => { this.Description = input }}
+                                      className="form-control form-control-md"
+                                      placeholder='Image of..' />
+
+                                    <label htmlFor="External_Url" style={{float: "left"}}>External_Url:</label>
+                                    <input
+                                      id='External_Url'
+                                      type='text'
+                                      ref={(input) => { this.Url = input }}
+                                      className="form-control form-control-md"
+                                      placeholder='url..'/>     
+
+                                  <br></br>
+
                                   <button type='submit' className='btn btn-primary'>Generate</button>
+                                  <div>
+                                    <h4>Images:</h4>                   
+                                  </div>
+                                  <div id="board"></div>
+                                                         
+                                  
                                 </form>
 
                               </div>
