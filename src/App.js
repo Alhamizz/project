@@ -79,7 +79,7 @@ function svgUrlToPng(svgUrl, callback) {
     canvas.width = svgImage.clientWidth;
     canvas.height = svgImage.clientHeight;
     const canvasCtx = canvas.getContext('2d');
-    canvasCtx.drawImage(svgImage, 0, 0);
+    canvasCtx.drawImage(svgImage, 25, 25);
     const imgData = canvas.toDataURL('image/png');
     callback(imgData);
     document.body.removeChild(svgImage);
@@ -345,7 +345,7 @@ class App extends Component {
       await this.createImage(idx, description, url);
       await timeout(400); //for 0.4 sec delay
       if ( idx < 21 && idx > 0){
-        if ( i === 0 || i === 6 ){
+        if ( i === 0 || i === 4 ){
           i = 1;
           row = document.createElement("tr");
           cell = document.createElement("td");
@@ -354,7 +354,7 @@ class App extends Component {
           tblBody.appendChild(row);        
           tbl.appendChild(tblBody);
           brd.appendChild(tbl);
-          console.log('1')
+   
   
         }else {
           i = i + 1;
@@ -364,7 +364,7 @@ class App extends Component {
           tblBody.appendChild(row);        
           tbl.appendChild(tblBody);
           brd.appendChild(tbl);
-          console.log('0')
+
         }      
       }
  
