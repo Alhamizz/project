@@ -4,34 +4,6 @@ import React, {Component } from "react";
 import './App.css';
 
 
-function svgToPng(svg, callback) {
-  const url = getSvgUrl(svg)
-  svgUrlToPng(url, (imgData) => {
-    callback(imgData);
-    URL.revokeObjectURL(url);
-  });
-}
-function getSvgUrl(svg) {
-  return URL.createObjectURL(new Blob([svg], {
-    type: 'image/svg+xml'
-  }));
-}
-function svgUrlToPng(svgUrl, callback) {
-  const svgImage = document.createElement('img');
-  document.body.appendChild(svgImage);
-  svgImage.onload = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = svgImage.clientWidth;
-    canvas.height = svgImage.clientHeight;
-    const canvasCtx = canvas.getContext('2d');
-    canvasCtx.drawImage(svgImage, 0, 0);
-    const imgData = canvas.toDataURL('image/png');
-    callback(imgData);
-    document.body.removeChild(svgImage);
-  };
-  svgImage.src = svgUrl;
-}
-
 function timeout(delay) {
   return new Promise( res => setTimeout(res, delay) );
 }
@@ -84,6 +56,36 @@ const SVGCircle = ({ radius }) => (
       />
   </svg>
 );
+
+function svgToPng(svg, callback) {
+  const url = getSvgUrl(svg)
+  svgUrlToPng(url, (imgData) => {
+    callback(imgData);
+    URL.revokeObjectURL(url);
+  });
+}
+
+function getSvgUrl(svg) {
+  return URL.createObjectURL(new Blob([svg], {
+    type: 'image/svg+xml'
+  }));
+}
+
+function svgUrlToPng(svgUrl, callback) {
+  const svgImage = document.createElement('img');
+  document.body.appendChild(svgImage);
+  svgImage.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = svgImage.clientWidth;
+    canvas.height = svgImage.clientHeight;
+    const canvasCtx = canvas.getContext('2d');
+    canvasCtx.drawImage(svgImage, 0, 0);
+    const imgData = canvas.toDataURL('image/png');
+    callback(imgData);
+    document.body.removeChild(svgImage);
+  };
+  svgImage.src = svgUrl;
+}
 
 class App extends Component {
 
@@ -325,17 +327,51 @@ class App extends Component {
     //console.log(beard[0])
   };
 
-  async generate(){  
+  async generate(description, url){  
 
     //const max = 0;
     //const arr = {};
-    let idx = 19;
+    let idx = 21;
+
+      var brd = document.getElementById("board");
+      var tbl = document.createElement("table");
+      var tblBody = document.createElement("tbody");
+      var row = document.createElement("tr");
+      var i = 0;
+    
 
     do {
-      await this.createImage(idx);
-      await timeout(300); //for 0.2 sec delay
+
+      await this.createImage(idx, description, url);
+      await timeout(400); //for 0.4 sec delay
+      if ( idx < 21 && idx > 0){
+        if ( i === 0 || i === 6 ){
+          i = 1;
+          row = document.createElement("tr");
+          cell = document.createElement("td");
+          cell.innerHTML = `<img src=${this.state.result}  />`;  
+          row.appendChild(cell);
+          tblBody.appendChild(row);        
+          tbl.appendChild(tblBody);
+          brd.appendChild(tbl);
+          console.log('1')
+  
+        }else {
+          i = i + 1;
+          var cell = document.createElement("td");
+          cell.innerHTML = `<img src=${this.state.result}  />`;
+          row.appendChild(cell);
+          tblBody.appendChild(row);        
+          tbl.appendChild(tblBody);
+          brd.appendChild(tbl);
+          console.log('0')
+        }      
+      }
+ 
       idx--;
     } while (idx >= 0);
+
+
   }
 
   async randInt(max ) {
@@ -464,10 +500,10 @@ class App extends Component {
     return Math.random() > skip ? this.state.layer6 : '';
   }
   
-  async createImage(idx) {
+  async createImage(idx, description, url) {
 
     const template = `
-      <svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
           <bg/>
           <head/>
           <eyes/>
@@ -512,39 +548,44 @@ class App extends Component {
 
       const meta = {
         name,
-        description: `A drawing of ${name.split('-').join(' ')}`,
+        description: `${description} ${name.split('-').join(' ')}`,
         image: `${idx}.svg`,
+        ipfsHash : ``,
+        external_url : `${url}`,
         attributes: [
           { 
             beard: '',
             rarity: 0.5
           }
         ]
-      }
+      } 
 
       svgToPng(final, (imgData) => {
-        const pngImage = document.createElement('img');
-        pngImage.src = imgData;
-        document.body.appendChild(pngImage);
-        const result = pngImage.src;
-        var blob = new Blob([result]);
-        const reader = new FileReader();
-        reader.readAsText(blob);
-        reader.onload = (e) => {
-          const png = reader.result;
-          //console.log(reader)
-          //console.log(png)
-          this.setState({png});
-        }
+        let image = new Image();
+        image.onload = () => {
+          
+          let canvas = document.createElement('canvas');
+          let context = canvas.getContext('2d');
 
+          context.drawImage(image, 0, 0, 150, 150);
+
+          let png = canvas.toDataURL();
+          this.setState({png});  
+        };
+        image.src = imgData;
+        const result =image.src;
+        this.setState({result});
       }); 
-
-
-      await this.downloadFile(`${idx}.svg`, final)
-      await this.downloadFile(`${idx}.png`, await this.state.png)
-      await this.downloadFile(`${idx}.json`, JSON.stringify(meta))
-
+  
+      if(idx < 21 && idx > 0){
+        await this.downloadFile(`${idx}.svg`, final)
+        await this.downloadFile(`${idx}.json`, JSON.stringify(meta))
       }
+
+      if(idx < 20){
+        await this.downloadPNG(`${idx + 1}.png`, this.state.png)
+      }
+    }
   }
 
  async downloadFile(name, file) {
@@ -554,13 +595,22 @@ class App extends Component {
     link.setAttribute('download', name);
     link.setAttribute('href', url);
     link.click();
-    console.log('succeed')
+    link.remove();
+  }
+
+  async downloadPNG(name, png) {
+    var link = document.createElement('a');
+    link.download = name;
+    link.style.opacity = "0";
+    link.href = png;
+    link.click();
+    link.remove();
   }
 
   constructor(props) {
     super(props)
     this.state = {
-      i : null,
+      i : 0,
       input: null,
       selectedFile: null,
       year: '0',
@@ -584,7 +634,8 @@ class App extends Component {
       nose: 'undefined',
       mouth: 'undefined',
       hair: 'undefined',
-      beard: 'undefined'
+      beard: 'undefined',
+      imgData: []
       }
   }
 
@@ -757,10 +808,13 @@ class App extends Component {
 
                               <div>  
                                 <br></br> 
+                                <h5>Input Layers (folder):</h5>   
 
                                 <form method="post" encType="multipart/form-data" action="#" onSubmit={(e) => {
-                                  e.preventDefault()   
-                                  this.generate();  
+                                  e.preventDefault()  
+                                  let description = this.Description.value
+                                  let url = this.Url.value
+                                  this.generate(description, url);  
                                  
                                 }}>
                                   <label htmlFor="Background" style={{float: "left"}}>Background:</label>
@@ -834,7 +888,35 @@ class App extends Component {
                                         className="form-control form-control-md"/> 
 
                                   <br></br>
+                                  <h5>Metadata:</h5>   
+
+                                  <label htmlFor="Description" style={{float: "left"}}>Description:</label> 
+                                    <input
+                                      id='Description' 
+                                      type='text'
+                                      ref={(input) => { this.Description = input }}
+                                      className="form-control form-control-md"
+                                      placeholder='Image of..' />
+
+                                    <label htmlFor="External_Url" style={{float: "left"}}>External_Url:</label>
+                                    <input
+                                      id='External_Url'
+                                      type='text'
+                                      ref={(input) => { this.Url = input }}
+                                      className="form-control form-control-md"
+                                      placeholder='url..'/>     
+
+                                  <br></br>
+
                                   <button type='submit' className='btn btn-primary'>Generate</button>
+                                  <br></br>
+                                  <br></br>
+                                  <div>
+                                    <h4>Images:</h4>                   
+                                  </div>
+                                  <div id="board"></div>
+                                                         
+                                  
                                 </form>
 
                               </div>
