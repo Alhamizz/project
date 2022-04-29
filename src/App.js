@@ -2,9 +2,12 @@ import logo from './logo.svg';
 import { Tabs, Tab } from 'react-bootstrap';
 import React, {Component } from "react";
 import './App.css';
+import { saveAs } from 'file-saver';
 
+const { createCanvas, loadImage } = require("canvas");
 
 function timeout(delay) {
+  
   return new Promise( res => setTimeout(res, delay) );
 }
 
@@ -87,7 +90,34 @@ function svgUrlToPng(svgUrl, callback) {
   svgImage.src = svgUrl;
 }
 
+function downloadFile(name, file) {
+  var link = document.createElement("a");
+  var blob = new Blob([file]);
+  var url  = window.URL.createObjectURL(blob);
+  link.setAttribute('download', name);
+  link.setAttribute('href', url);
+  link.click();
+  link.remove();
+}
+
+function downloadPNG(name, png) {
+
+  var link = document.createElement('a');
+  link.download = name;
+  link.style.opacity = "0";
+  link.href = png;
+  link.click();
+  link.remove();
+}
+
+function getBase64String(dataURL) {
+  var idx = dataURL.indexOf('base64,') + 'base64,'.length;
+  return dataURL.substring(idx);
+}
+
+
 class App extends Component {
+  
 
 // MENU 1 COUNTDOWN
   async countdown(datetime){
@@ -204,7 +234,6 @@ class App extends Component {
       this.setState({image: e.target.result});
     };
     reader.readAsDataURL(event.target.files[0]);
-    console.log(this.state.abc)
 
   };
 
@@ -236,142 +265,126 @@ class App extends Component {
 
   
 // MENU 3 NFT FACTORY
-  inputBackground = event => {
-    var background = [];
-    const backgroundLength = event.target.files.length;
-    this.setState({backgroundLength});
 
-    for (var i = 0; i < event.target.files.length ; i++){
-      background[i] = event.target.files[i];
+  async generate(prefix, description, url, rarity, items){  
 
-      this.setState({background});
-    }
-    //console.log(background[0])
-  };
+    var brd = document.getElementById("board");
+    var tbl = document.createElement("table");
+    var tblBody = document.createElement("tbody");
+    var row = document.createElement("tr");
+    var i = 0;
+    var idx = items ;
 
-  inputHead = event => {
-    var head = [];
-    const headLength = event.target.files.length;
-    this.setState({headLength});
+    const data0 = await this.state.background[0]; 
+    const data0name = data0.name;
+    const re = 'svg';
+    const imageType = await data0name.match(re);
 
-    for (var i = 0; i < event.target.files.length; i++){
-      head[i] = event.target.files[i];
+    console.log(this.state.background);
+    console.log(this.state.head);
+    console.log(this.state.eyes);
+    console.log(this.state.nose);
+    console.log(this.state.mouth);
+    console.log(this.state.hair);
+    console.log(this.state.beard);
+    console.log(this.state.layer7items);
+    console.log(this.state.layer8items);
+    console.log(this.state.layer9items);
 
-      this.setState({head});
-    }
-    //console.log(head[0])
-  };
+    var itemsInput = [
+      [ this.state.background ],
+      [ this.state.head ],
+      [ this.state.eyes ],
+      [ this.state.nose ],
+      [ this.state.mouth ],
+      [ this.state.hair ],
+      [ this.state.beard ],
+      [ this.state.layer7items ],
+      [ this.state.layer8items ],
+      [ this.state.layer9items ],
+    ];
 
-  inputEyes = event => {
-    var eyes = [];
-    const eyesLength = event.target.files.length;
-    this.setState({eyesLength});
+    this.setState({itemsInput});
+    var svg = [];
+    this.setState({svg});
+    var finish = [];
+    this.setState({finish});
+    var JSON = [];
+    this.setState({JSON});
 
-    for (var i = 0; i < event.target.files.length; i++){
-      eyes[i] = event.target.files[i];
-
-      this.setState({eyes});
-    }
-    //console.log(eyes[0])
-  };
-
-  inputNose = event => {
-    var nose = [];
-    const noseLength = event.target.files.length;
-    this.setState({noseLength});
-
-    for (var i = 0; i < event.target.files.length; i++){
-      nose[i] = event.target.files[i];
-
-      this.setState({nose});
-    }
-    //console.log(nose[0])
-  };
-
-  inputMouth = event => {
-    var mouth = [];
-    const mouthLength = event.target.files.length;
-    this.setState({mouthLength});
-
-    for (var i = 0; i < event.target.files.length; i++){
-      mouth[i] = event.target.files[i];
-
-      this.setState({mouth});
-    }
-    //console.log(mouth[0])
-  };
-
-  inputHair = event => {
-    var hair = [];
-    const hairLength = event.target.files.length;
-    this.setState({hairLength});
-
-    for (var i = 0; i < event.target.files.length; i++){
-      hair[i] = event.target.files[i];
-
-      this.setState({hair});
-    }
-    //console.log(hair[0])
-  };
-
-  inputBeard = event => {
-    var beard = [];
-    const beardLength = event.target.files.length;
-    this.setState({beardLength});
-
-    for (var i = 0; i < event.target.files.length; i++){
-      beard[i] = event.target.files[i];
-
-      this.setState({beard});
-    }
-    //console.log(beard[0])
-  };
-
-  async generate(description, url){  
-
-    //const max = 0;
-    //const arr = {};
-    let idx = 21;
-
-      var brd = document.getElementById("board");
-      var tbl = document.createElement("table");
-      var tblBody = document.createElement("tbody");
-      var row = document.createElement("tr");
-      var i = 0;
-    
 
     do {
 
-      await this.createImage(idx, description, url);
-      await timeout(400); //for 0.4 sec delay
-      if ( idx < 21 && idx > 0){
-        if ( i === 0 || i === 4 ){
-          i = 1;
-          row = document.createElement("tr");
-          cell = document.createElement("td");
-          cell.innerHTML = `<img src=${this.state.result}  />`;  
-          row.appendChild(cell);
-          tblBody.appendChild(row);        
-          tbl.appendChild(tblBody);
-          brd.appendChild(tbl);
-   
-  
-        }else {
-          i = i + 1;
-          var cell = document.createElement("td");
-          cell.innerHTML = `<img src=${this.state.result}  />`;
-          row.appendChild(cell);
-          tblBody.appendChild(row);        
-          tbl.appendChild(tblBody);
-          brd.appendChild(tbl);
+      if(imageType == 'svg'){
+        await this.createImage(idx, prefix, description, url, rarity, items);
+        await timeout(500); //for 0.5 sec delay
+        if ( idx < items && idx > 0){
+          if ( i === 0 || i === 4 ){
+            i = 1;
+            row = document.createElement("tr");
+            cell = document.createElement("td");
+            cell.innerHTML = `<img src=${this.state.result}  />`;  
+            //console.log(this.state.result);
+            row.appendChild(cell);
+            tblBody.appendChild(row);        
+            tbl.appendChild(tblBody);
+            brd.appendChild(tbl);
+    
+          }else {
+            i = i + 1;
+            var cell = document.createElement("td");
+            cell.innerHTML = `<img src=${this.state.result}  />`;
+            row.appendChild(cell);
+            tblBody.appendChild(row);        
+            tbl.appendChild(tblBody);
+            brd.appendChild(tbl);
+          }      
+        }
+      } else {
 
-        }      
-      }
- 
+        await this.createPNG(idx, prefix, description, url, rarity, items);
+        await timeout(500); //for 0.5 sec delay
+
+        if ( idx < items && idx > 0){
+          if ( i === 0 || i === 4 ){
+            i = 1;
+            row = document.createElement("tr");
+            cell = document.createElement("td");
+            cell.innerHTML = `<img src=${this.state.result}  />`;  
+            //console.log(this.state.result);
+            row.appendChild(cell);
+            tblBody.appendChild(row);        
+            tbl.appendChild(tblBody);
+            brd.appendChild(tbl);
+    
+          }else {
+            i = i + 1;
+            var cell = document.createElement("td");
+            cell.innerHTML = `<img src=${this.state.result}  />`;
+            row.appendChild(cell);
+            tblBody.appendChild(row);        
+            tbl.appendChild(tblBody);
+            brd.appendChild(tbl);
+          } 
+        }     
+      }   
       idx--;
+
+      if(idx == 0){
+        var containerButton = document.getElementById("containerButton");
+        containerButton.appendChild(document.createElement("br"));   
+        var button = document.createElement("button");
+        button.innerHTML = 'Download'
+        button.className='btn btn-primary'
+
+        button.onclick = function (){
+          this.downloadzipJSON();
+          this.downloadzipPNG();
+      }.bind(this);
+        containerButton.appendChild(button);
+        
+      }
     } while (idx >= 0);
-
-
   }
 
   async randInt(max ) {
@@ -384,25 +397,26 @@ class App extends Component {
 
   async getRandomName() {
     const takenNames = {};
-        const adjectives = 'fired trashy tubular nasty jacked swol buff ferocious firey flamin agnostic artificial bloody crazy cringey crusty dirty eccentric glutinous harry juicy simple stylish awesome creepy corny freaky shady sketchy lame sloppy hot intrepid juxtaposed killer ludicrous mangy pastey ragin rusty rockin sinful shameful stupid sterile ugly vascular wild young old zealous flamboyant super sly shifty trippy fried injured depressed anxious clinical'.split(' ');
-        const names = 'aaron bart chad dale earl fred grady harry ivan jeff joe kyle lester steve tanner lucifer todd mitch hunter mike arnold norbert olaf plop quinten randy saul balzac tevin jack ulysses vince will xavier yusuf zack roger raheem rex dustin seth bronson dennis'.split(' ');
+      const adjectives = 'fired trashy tubular nasty jacked swol buff ferocious firey flamin agnostic artificial bloody crazy cringey crusty dirty eccentric glutinous harry juicy simple stylish awesome creepy corny freaky shady sketchy lame sloppy hot intrepid juxtaposed killer ludicrous mangy pastey ragin rusty rockin sinful shameful stupid sterile ugly vascular wild young old zealous flamboyant super sly shifty trippy fried injured depressed anxious clinical'.split(' ');
+      const names = 'aaron bart chad dale earl fred grady harry ivan jeff joe kyle lester steve tanner lucifer todd mitch hunter mike arnold norbert olaf plop quinten randy saul balzac tevin jack ulysses vince will xavier yusuf zack roger raheem rex dustin seth bronson dennis'.split(' ');
         
-        const randAdj = await this.randElement(adjectives);
-        const randName = await this.randElement(names);
-        const name = `${randAdj}-${randName}`;
+      const randAdj = await this.randElement(adjectives);
+      const randName = await this.randElement(names);
+      const name = `${randAdj}-${randName}`;
 
-
-        if (takenNames[name] || !name) {
-            return this.getRandomName();
-        } else {
-            takenNames[name] = name;
-            return name;
-        }
+      if (takenNames[name] || !name) {
+        return this.getRandomName();
+      } else {
+        takenNames[name] = name;
+        return name;
+      }
   }
 
   async getLayer0(backgroundnum, skip=0.0) {
 
-    const data0 = this.state.background[backgroundnum]; 
+    const data0 = await this.state.background[backgroundnum]; 
+    const data0name = await data0.name.replace('.svg','');
+    this.setState({data0name});
 
     const reader = new FileReader();
     reader.readAsText(data0);
@@ -412,13 +426,15 @@ class App extends Component {
       const layer0 = svg.match(re)[0];
       this.setState({layer0});
     };
-
     return Math.random() > skip ? this.state.layer0 : '';
   }
 
   async getLayer1(headnum, skip=0.0) {
 
-    const data1 = this.state.head[headnum]; 
+    const data1 = await this.state.head[headnum]; 
+    const data1name = await data1.name.replace('.svg','');
+    this.setState({data1name});
+
     const reader = new FileReader();
     reader.readAsText(data1);
     reader.onload = (e) => {
@@ -432,7 +448,10 @@ class App extends Component {
 
   async getLayer2(eyesnum, skip=0.0) {
 
-    const data2 = this.state.eyes[eyesnum];
+    const data2 = await this.state.eyes[eyesnum];
+    const data2name = await data2.name.replace('.svg','');
+    this.setState({data2name});
+
     const reader = new FileReader();
     reader.readAsText(data2);
     reader.onload = (e) => {
@@ -446,7 +465,10 @@ class App extends Component {
 
   async getLayer3(nosenum, skip=0.0) {
 
-    const data3 = this.state.nose[nosenum];
+    const data3 = await this.state.nose[nosenum];
+    const data3name = await data3.name.replace('.svg','');
+    this.setState({data3name});
+
     const reader = new FileReader();
     reader.readAsText(data3);
     reader.onload = (e) => {
@@ -460,7 +482,10 @@ class App extends Component {
 
   async getLayer4(mouthnum, skip=0.0) {
 
-    const data4 = this.state.mouth[mouthnum];
+    const data4 = await this.state.mouth[mouthnum];
+    const data4name = await data4.name.replace('.svg','');
+    this.setState({data4name});
+
     const reader = new FileReader();
     reader.readAsText(data4);
     reader.onload = (e) => {
@@ -474,7 +499,10 @@ class App extends Component {
 
   async getLayer5(hairnum, skip=0.0) {
 
-    const data5 = this.state.hair[hairnum];
+    const data5 = await this.state.hair[hairnum];
+    const data5name = await data5.name.replace('.svg','');
+    this.setState({data5name});
+
     const reader = new FileReader();
     reader.readAsText(data5);
     reader.onload = (e) => {
@@ -488,7 +516,10 @@ class App extends Component {
 
   async getLayer6(beardnum, skip=0.0) {
 
-    const data6 = this.state.beard[beardnum]; 
+    const data6 = await this.state.beard[beardnum]; 
+    const data6name = await data6.name.replace('.svg','');
+    this.setState({data6name});
+
     const reader = new FileReader();
     reader.readAsText(data6);
     reader.onload = (e) => {
@@ -499,10 +530,160 @@ class App extends Component {
     };
     return Math.random() > skip ? this.state.layer6 : '';
   }
-  
-  async createImage(idx, description, url) {
 
-    const template = `
+  async getLayer7(layer7itemsnum, skip=0.0) {
+
+    const data7 = await this.state.layer7items[layer7itemsnum]; 
+    const data7name = await data7.name.replace('.svg','');
+    this.setState({data7name});
+
+    const reader = new FileReader();
+    reader.readAsText(data7);
+    reader.onload = (e) => {
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer7 = svg.match(re)[0];
+      this.setState({layer7});
+    };
+    return Math.random() > skip ? this.state.layer7 : '';
+  }
+
+  async getLayer8(layer8itemsnum, skip=0.0) {
+
+    const data8 = await this.state.layer8items[layer8itemsnum]; 
+    const data8name = await data8.name.replace('.svg','');
+    this.setState({data8name});
+
+    const reader = new FileReader();
+    reader.readAsText(data8);
+    reader.onload = (e) => {
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer8 = svg.match(re)[0];
+      this.setState({layer8});
+    };
+    return Math.random() > skip ? this.state.layer8 : '';
+  }
+
+  async getLayer9(layer9itemsnum, skip=0.0) {
+
+    const data9 = this.state.layer9items[layer9itemsnum]; 
+    const data9name = await data9.name.replace('.svg','');
+    this.setState({data9name});
+
+    const reader = new FileReader();
+    reader.readAsText(data9);
+    reader.onload = (e) => {
+      const svg = reader.result;
+      const re = /(?<=\<svg\s*[^>]*>)([\s\S]*?)(?=\<\/svg\>)/g
+      const layer9 = svg.match(re)[0];
+      this.setState({layer9});
+    };
+    return Math.random() > skip ? this.state.layer9 : '';
+  }
+  
+  async combineImage(backgroundResult, headResult, eyesResult, noseResult, mouthResult, hairResult, beardResult, layer7Result, layer8Result, layer9Result) {
+
+    if(this.state.number == 1){
+      const template = `
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <bg/>
+      </svg>
+      ` 
+  
+      const final = template
+      .replace('<bg/>', backgroundResult)
+  
+      return final;
+    } else if(this.state.number == 2){
+      const template = `
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <bg/>
+          <head/>
+      </svg>
+      ` 
+  
+      const final = template
+      .replace('<bg/>', backgroundResult)
+      .replace('<head/>', headResult)
+
+  
+      return final;
+    } else if(this.state.number == 3){
+      const template = `
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <bg/>
+          <head/>
+          <eyes/>
+      </svg>
+      ` 
+  
+      const final = template
+      .replace('<bg/>', backgroundResult)
+      .replace('<head/>', headResult)
+      .replace('<eyes/>', eyesResult)    
+
+  
+      return final;
+    } else if(this.state.number == 4){
+      const template = `
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <bg/>
+          <head/>
+          <eyes/>
+          <nose/>
+      </svg>
+      ` 
+  
+      const final = template
+      .replace('<bg/>', backgroundResult)
+      .replace('<head/>', headResult)
+      .replace('<eyes/>', eyesResult)    
+      .replace('<nose/>', noseResult)
+
+      return final;
+    } else if(this.state.number == 5){
+      const template = `
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <bg/>
+          <head/>
+          <eyes/>
+          <nose/>
+          <mouth/>
+      </svg>
+      ` 
+  
+      const final = template
+      .replace('<bg/>', backgroundResult)
+      .replace('<head/>', headResult)
+      .replace('<eyes/>', eyesResult)    
+      .replace('<nose/>', noseResult)
+      .replace('<mouth/>', mouthResult)
+
+  
+      return final;
+    } else if(this.state.number == 6){
+      const template = `
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <bg/>
+          <head/>
+          <eyes/>
+          <nose/>
+          <mouth/>
+      </svg>
+      ` 
+  
+      const final = template
+      .replace('<bg/>', backgroundResult)
+      .replace('<head/>', headResult)
+      .replace('<eyes/>', eyesResult)    
+      .replace('<nose/>', noseResult)
+      .replace('<mouth/>', mouthResult)
+      .replace('<hair/>', hairResult)
+  
+      return final;
+    } else if(this.state.number == 7){
+      const template = `
       <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
           <bg/>
           <head/>
@@ -512,100 +693,1607 @@ class App extends Component {
           <hair/>
           <beard/>
       </svg>
-    ` 
-
-    const backgroundResult = await this.getLayer0(await this.randInt(this.state.backgroundLength));
-    const headResult = await this.getLayer1(await this.randInt(this.state.headLength));
-    const eyesResult =  await this.getLayer2(await this.randInt(this.state.eyesLength));
-    const noseResult =  await this.getLayer3(await this.randInt(this.state.noseLength));
-    const mouthResult = await this.getLayer4(await this.randInt(this.state.mouthLength));
-    const hairResult = await this.getLayer5(await this.randInt(this.state.hairLength));
-    const beardResult = await this.getLayer6(await this.randInt(this.state.beardLength));
-
-    var takenFaces = {};
-
-    // 18,900 combinations
-  
-    var face = [eyesResult, noseResult, mouthResult, hairResult, beardResult].join('');
-  
-    if (face[takenFaces]) {
-      this.createImage();
-    } else {
-      const name = await this.getRandomName()
-      //console.log(name)
-      face = face[takenFaces];
+      ` 
   
       const final = template
-        .replace('<bg/>', backgroundResult)
-        .replace('<head/>', headResult)
-        .replace('<eyes/>', eyesResult)     
-        .replace('<nose/>', noseResult)
-        .replace('<mouth/>', mouthResult)
-        .replace('<hair/>', hairResult)
-        .replace('<beard/>', beardResult)
+      .replace('<bg/>', backgroundResult)
+      .replace('<head/>', headResult)
+      .replace('<eyes/>', eyesResult)    
+      .replace('<nose/>', noseResult)
+      .replace('<mouth/>', mouthResult)
+      .replace('<hair/>', hairResult)
+      .replace('<beard/>', beardResult)
   
-      //console.log(final)
+      return final;
+    }else if(this.state.number == 8){
+      const template = `
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <bg/>
+          <head/>
+          <eyes/>
+          <nose/>
+          <mouth/>
+          <hair/>
+          <beard/>
+          <layer7/>
+      </svg>
+      ` 
+  
+      const final = template
+      .replace('<bg/>', backgroundResult)
+      .replace('<head/>', headResult)
+      .replace('<eyes/>', eyesResult)    
+      .replace('<nose/>', noseResult)
+      .replace('<mouth/>', mouthResult)
+      .replace('<hair/>', hairResult)
+      .replace('<beard/>', beardResult)
+      .replace('<hair/>', layer7Result)
+  
+      return final;
+    }else if(this.state.number == 9){
+      const template = `
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <bg/>
+          <head/>
+          <eyes/>
+          <nose/>
+          <mouth/>
+          <hair/>
+          <beard/>
+          <layer7/>
+          <layer8/>
+      </svg>
+      ` 
+  
+      const final = template
+      .replace('<bg/>', backgroundResult)
+      .replace('<head/>', headResult)
+      .replace('<eyes/>', eyesResult)    
+      .replace('<nose/>', noseResult)
+      .replace('<mouth/>', mouthResult)
+      .replace('<hair/>', hairResult)
+      .replace('<beard/>', beardResult)
+      .replace('<hair/>', layer7Result)
+      .replace('<beard/>', layer8Result)
+      
+  
+      return final;
+    }else if(this.state.number == 10){
+      const template = `
+      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <bg/>
+          <head/>
+          <eyes/>
+          <nose/>
+          <mouth/>
+          <hair/>
+          <beard/>
+          <layer7/>
+          <layer8/>
+          <layer9/>
+      </svg>
+      ` 
+  
+      const final = template
+      .replace('<bg/>', backgroundResult)
+      .replace('<head/>', headResult)
+      .replace('<eyes/>', eyesResult)    
+      .replace('<nose/>', noseResult)
+      .replace('<mouth/>', mouthResult)
+      .replace('<hair/>', hairResult)
+      .replace('<beard/>', beardResult)
+      .replace('<layer7/>', layer7Result)
+      .replace('<layer8/>', layer8Result)
+      .replace('<layer9/>', layer9Result)
 
+      return final;
+    };
+
+  }
+  
+  async generateRandomImages() {
+
+    if(this.state.number == 1){
+      const backgroundResult = await this.getLayer0(await this.randInt(this.state.background.length));
+
+      const final = this.combineImage(backgroundResult);
+
+      return final;
+    } else if(this.state.number == 2){
+      const backgroundResult = await this.getLayer0(await this.randInt(this.state.background.length));
+      const headResult = await this.getLayer1(await this.randInt(this.state.head.length));
+
+      const final = await this.combineImage(backgroundResult, headResult);
+
+      return final;
+    } else if(this.state.number == 3){
+      const backgroundResult = await this.getLayer0(await this.randInt(this.state.background.length));
+      const headResult = await this.getLayer1(await this.randInt(this.state.head.length));
+      const eyesResult = await this.getLayer2(await this.randInt(this.state.eyes.length));
+
+      const final = await this.combineImage(backgroundResult, headResult, eyesResult);
+
+      return final;
+    } else if(this.state.number == 4){
+      const backgroundResult = await this.getLayer0(await this.randInt(this.state.background.length));
+      const headResult = await this.getLayer1(await this.randInt(this.state.head.length));
+      const eyesResult = await this.getLayer2(await this.randInt(this.state.eyes.length));
+      const noseResult = await this.getLayer3(await this.randInt(this.state.nose.length));
+
+      const final = this.combineImage(backgroundResult, headResult, eyesResult, noseResult);
+
+      return final;
+    } else if(this.state.number == 5){
+      const backgroundResult = await this.getLayer0(await this.randInt(this.state.background.length));
+      const headResult = await this.getLayer1(await this.randInt(this.state.head.length));
+      const eyesResult = await this.getLayer2(await this.randInt(this.state.eyes.length));
+      const noseResult = await this.getLayer3(await this.randInt(this.state.nose.length));
+      const mouthResult = await this.getLayer4(await this.randInt(this.state.mouth.length));
+
+      const final = this.combineImage(backgroundResult, headResult, eyesResult, noseResult, mouthResult);
+
+      return final;
+    } else if(this.state.number == 6){
+      const backgroundResult = this.getLayer0(await this.randInt(this.state.background.length));
+      const headResult = this.getLayer1(await this.randInt(this.state.head.length));
+      const eyesResult = await this.getLayer2(await this.randInt(this.state.eyes.length));
+      const noseResult = await this.getLayer3(await this.randInt(this.state.nose.length));
+      const mouthResult = await this.getLayer4(await this.randInt(this.state.mouth.length));
+      const hairResult = await this.getLayer5(await this.randInt(this.state.hair.length));
+
+      const final = this.combineImage(backgroundResult, headResult, eyesResult, noseResult, mouthResult, hairResult);
+
+      return final;
+    } else if(this.state.number == 7){
+      const backgroundResult = await this.getLayer0(await this.randInt(this.state.background.length));
+      const headResult = await this.getLayer1(await this.randInt(this.state.head.length));
+      const eyesResult = await this.getLayer2(await this.randInt(this.state.eyes.length));
+      const noseResult = await this.getLayer3(await this.randInt(this.state.nose.length));
+      const mouthResult = await this.getLayer4(await this.randInt(this.state.mouth.length));
+      const hairResult = await this.getLayer5(await this.randInt(this.state.hair.length));
+      const beardResult = await this.getLayer6(await this.randInt(this.state.beard.length));
+
+      const final = this.combineImage(backgroundResult, headResult, eyesResult, noseResult, mouthResult, hairResult, beardResult);
+
+      return final;
+    } else if(this.state.number == 8){
+      const backgroundResult = await this.getLayer0(await this.randInt(this.state.background.length));
+      const headResult = await this.getLayer1(await this.randInt(this.state.head.length));
+      const eyesResult = await this.getLayer2(await this.randInt(this.state.eyes.length));
+      const noseResult = await this.getLayer3(await this.randInt(this.state.nose.length));
+      const mouthResult = await this.getLayer4(await this.randInt(this.state.mouth.length));
+      const hairResult = await this.getLayer5(await this.randInt(this.state.hair.length));
+      const beardResult = await this.getLayer6(await this.randInt(this.state.beard.length));
+      const layer7Result = await this.getLayer7(await this.randInt(this.state.beard.length));
+
+      const final = this.combineImage(backgroundResult, headResult, eyesResult, noseResult, mouthResult, hairResult, beardResult, layer7Result);
+
+      return final;
+    } else if(this.state.number == 9){
+      const backgroundResult = await this.getLayer0(await this.randInt(this.state.background.length));
+      const headResult = await this.getLayer1(await this.randInt(this.state.head.length));
+      const eyesResult = await this.getLayer2(await this.randInt(this.state.eyes.length));
+      const noseResult = await this.getLayer3(await this.randInt(this.state.nose.length));
+      const mouthResult = await this.getLayer4(await this.randInt(this.state.mouth.length));
+      const hairResult = await this.getLayer5(await this.randInt(this.state.hair.length));
+      const beardResult = await this.getLayer6(await this.randInt(this.state.beard.length));
+      const layer7Result = await this.getLayer7(await this.randInt(this.state.beard.length));
+      const layer8Result = await this.getLayer8(await this.randInt(this.state.beard.length));
+
+      const final = this.combineImage(backgroundResult, headResult, eyesResult, noseResult, mouthResult, hairResult, beardResult, layer7Result, layer8Result);
+
+      return final;
+    } else if(this.state.number == 10){
+      const backgroundResult = await this.getLayer0(await this.randInt(this.state.background.length));
+      const headResult = await this.getLayer1(await this.randInt(this.state.head.length));
+      const eyesResult = await this.getLayer2(await this.randInt(this.state.eyes.length));
+      const noseResult = await this.getLayer3(await this.randInt(this.state.nose.length));
+      const mouthResult = await this.getLayer4(await this.randInt(this.state.mouth.length));
+      const hairResult = await this.getLayer5(await this.randInt(this.state.hair.length));
+      const beardResult = await this.getLayer6(await this.randInt(this.state.beard.length));
+      const layer7Result = await this.getLayer7(await this.randInt(this.state.layer7items.length));
+      const layer8Result = await this.getLayer8(await this.randInt(this.state.layer8items.length));
+      const layer9Result = await this.getLayer9(await this.randInt(this.state.layer9items.length));
+
+      const final = this.combineImage(backgroundResult, headResult, eyesResult, noseResult, mouthResult, hairResult, beardResult, layer7Result, layer8Result, layer9Result);
+
+      return final;
+    };
+  }
+
+  async checkImage(rarity){
+  
+
+    var possibleCombinations = rarity * (this.state.head.length * this.state.eyes.length /* this.state.nose.length  * this.state.mouth.length  * this.state.hair.length * this.state.beard.length*/);
+    // 9600 combinations
+
+    let reachedEnd = false;
+
+    for (var i=0; i < possibleCombinations; i++){
+      var newFace = await this.generateRandomImages();
+      var abc = [];
+      abc.push(newFace);
+      console.log(abc)
+
+      var repeated = 0;
+
+      for (var j = 0; j < this.state.svg.length ; j++){
+        console.log(j);
+        console.log(this.state.svg.length);
+        //console.log(this.state.svg[j]);
+        //console.log(await newFace);
+
+        if (this.state.svg[j] == await newFace){
+          repeated++;  
+          //console.log("Repeat");
+        }         
+      }         
+      if(repeated < rarity){
+        reachedEnd = false;
+        //console.log('Continue');
+        return newFace;   
+      }
+      if(reachedEnd == true){
+        //console.log('No more possible combination');
+      } 
+      //console.log('end'); 
+    } 
+  }
+
+  async createImage(idx, prefix, description, url, rarity, items) {
+
+    var newFace = await this.checkImage(rarity);
+
+    this.state.svg.push(newFace);
+     
+    const name = await this.getRandomName();
+    //console.log(name);
+
+    if(this.state.number == 1){
       const meta = {
-        name,
+      
+        name: `${prefix} #${idx}`,
         description: `${description} ${name.split('-').join(' ')}`,
-        image: `${idx}.svg`,
-        ipfsHash : ``,
+        image : ``,
+        external_url : `${url}`,
+        attributes: []
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 2){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
         external_url : `${url}`,
         attributes: [
+    
           { 
-            beard: '',
-            rarity: 0.5
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          }         
+        ]
+      } 
+      this.state.JSON.push(meta);
+      
+    } else if(this.state.number == 3){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
           }
         ]
       } 
+      this.state.JSON.push(meta);
 
-      svgToPng(final, (imgData) => {
-        let image = new Image();
-        image.onload = () => {
-          
-          let canvas = document.createElement('canvas');
-          let context = canvas.getContext('2d');
+    } else if(this.state.number == 4){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
 
-          context.drawImage(image, 0, 0, 150, 150);
+    } else if(this.state.number == 5){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
 
-          let png = canvas.toDataURL();
-          this.setState({png});  
-        };
-        image.src = imgData;
-        const result =image.src;
-        this.setState({result});
-      }); 
+    } else if(this.state.number == 6){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 7){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          },
+          { 
+            trait_type: this.state.layerName[7],
+            value: await this.state.data6name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 8){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          },
+          { 
+            trait_type: this.state.layerName[7],
+            value: await this.state.data6name,
+          },
+          { 
+            trait_type: this.state.layerName[8],
+            value: await this.state.data7name,
+          },
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 9){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          },
+          { 
+            trait_type: this.state.layerName[7],
+            value: await this.state.data6name,
+          },
+          { 
+            trait_type: this.state.layerName[8],
+            value: await this.state.data7name,
+          },          { 
+            trait_type: this.state.layerName[9],
+            value: await this.state.data8name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 10){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          },
+          { 
+            trait_type: this.state.layerName[7],
+            value: await this.state.data6name,
+          },
+          { 
+            trait_type: this.state.layerName[8],
+            value: await this.state.data7name,
+          },
+          { 
+            trait_type: this.state.layerName[9],
+            value: await this.state.data8name,
+          },
+          { 
+            trait_type: this.state.layerName[10],
+            value: await this.state.data9name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+    };
+
+    svgToPng(newFace, (imgData) => {
+      let image = new Image();
+      image.onload = () => {
+            
+        let canvas = document.createElement('canvas');
+        let context = canvas.getContext('2d');
+
+        context.drawImage(image, 0, 0, 150, 150);
+        var png = [];
+
+        png = canvas.toDataURL().toString();
+        //this.setState({png});
+        this.state.finish.push(png) ;
+      };
+
+      image.src = imgData;
+      const result =image.src;
+      this.setState({result});
+    }); 
   
-      if(idx < 21 && idx > 0){
-        await this.downloadFile(`${idx}.svg`, final)
-        await this.downloadFile(`${idx}.json`, JSON.stringify(meta))
-      }
+  } 
 
-      if(idx < 20){
-        await this.downloadPNG(`${idx + 1}.png`, this.state.png)
+async createPNG(idx, prefix, description, url, rarity, items) {
+   
+  const  imageFormat = {
+    width: 250,
+    height: 250 
+  };
+
+  const  canvas = createCanvas(imageFormat.width, imageFormat.height);
+  const  ctx = canvas.getContext("2d");
+
+    if(this.state.number == 1){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+  
+      var blob = new Blob([await this.state.background[backgroundResult]]);
+      var url  = window.URL.createObjectURL(blob);
+
+      const  backgroundIm = await loadImage(await url);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+
+
+    } else if(this.state.number == 2){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const headResult = await this.randInt(this.state.head.length);
+
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+      const data1name = await this.state.head[headResult].name.replace('.png','');
+      this.setState({data1name});
+
+      var blob0 = new Blob([await this.state.background[backgroundResult]]);
+      var url0  = window.URL.createObjectURL(blob0);
+      var blob1 = new Blob([await this.state.head[headResult]]);
+      var url1  = window.URL.createObjectURL(blob1);
+
+      const  backgroundIm = await loadImage(url0);
+      const  headIm = await loadImage(url1);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(headIm,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+
+    } else if(this.state.number == 3){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const headResult = await this.randInt(this.state.head.length);
+      const eyesResult = await this.randInt(this.state.eyes.length);
+
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+      const data1name = await this.state.head[headResult].name.replace('.png','');
+      this.setState({data1name});
+      const data2name = await this.state.eyes[eyesResult].name.replace('.png','');
+      this.setState({data2name});
+
+      var blob0 = new Blob([await this.state.background[backgroundResult]]);
+      var url0  = window.URL.createObjectURL(blob0);
+      var blob1 = new Blob([await this.state.head[headResult]]);
+      var url1  = window.URL.createObjectURL(blob1);
+      var blob2 = new Blob([await this.state.eyes[eyesResult]]);
+      var url2  = window.URL.createObjectURL(blob2);
+
+      const  backgroundIm = await loadImage(url0);
+      const  headIm = await loadImage(url1);
+      const  eyesIm = await loadImage(url1);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(headIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(eyesIm,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+
+
+    } else if(this.state.number == 4){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const headResult = await this.randInt(this.state.head.length);
+      const eyesResult = await this.randInt(this.state.eyes.length);
+      const noseResult = await this.randInt(this.state.nose.length);
+
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+      const data1name = await this.state.head[headResult].name.replace('.png','');
+      this.setState({data1name});
+      const data2name = await this.state.eyes[eyesResult].name.replace('.png','');
+      this.setState({data2name});
+      const data3name = await this.state.nose[noseResult].name.replace('.png','');
+      this.setState({data3name});
+
+      var blob0 = new Blob([await this.state.background[backgroundResult]]);
+      var url0  = window.URL.createObjectURL(blob0);
+      var blob1 = new Blob([await this.state.head[headResult]]);
+      var url1  = window.URL.createObjectURL(blob1);
+      var blob2 = new Blob([await this.state.eyes[eyesResult]]);
+      var url2  = window.URL.createObjectURL(blob2);
+      var blob3 = new Blob([await this.state.nose[noseResult]]);
+      var url3  = window.URL.createObjectURL(blob3);
+
+      const  backgroundIm = await loadImage(url0);
+      const  headIm = await loadImage(url1);
+      const  eyesIm = await loadImage(url2);
+      const  noseIm = await loadImage(url3);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(headIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(eyesIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(noseIm,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+
+    } else if(this.state.number == 5){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const headResult = await this.randInt(this.state.head.length);
+      const eyesResult = await this.randInt(this.state.eyes.length);
+      const noseResult = await this.randInt(this.state.nose.length);
+      const mouthResult = await this.randInt(this.state.mouth.length);
+
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+      const data1name = await this.state.head[headResult].name.replace('.png','');
+      this.setState({data1name});
+      const data2name = await this.state.eyes[eyesResult].name.replace('.png','');
+      this.setState({data2name});
+      const data3name = await this.state.nose[noseResult].name.replace('.png','');
+      this.setState({data3name});
+      const data4name = await this.state.mouth[mouthResult].name.replace('.png','');
+      this.setState({data4name});
+
+      var blob0 = new Blob([await this.state.background[backgroundResult]]);
+      var url0  = window.URL.createObjectURL(blob0);
+      var blob1 = new Blob([await this.state.head[headResult]]);
+      var url1  = window.URL.createObjectURL(blob1);
+      var blob2 = new Blob([await this.state.eyes[eyesResult]]);
+      var url2  = window.URL.createObjectURL(blob2);
+      var blob3 = new Blob([await this.state.nose[noseResult]]);
+      var url3  = window.URL.createObjectURL(blob3);
+      var blob4 = new Blob([await this.state.mouth[mouthResult]]);
+      var url4  = window.URL.createObjectURL(blob4);
+
+      const  backgroundIm = await loadImage(url0);
+      const  headIm = await loadImage(url1);
+      const  eyesIm = await loadImage(url2);
+      const  noseIm = await loadImage(url3);
+      const  mouthIm = await loadImage(url4);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(headIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(eyesIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(noseIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(mouthIm,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+
+    } else if(this.state.number == 6){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const headResult = await this.randInt(this.state.head.length);
+      const eyesResult = await this.randInt(this.state.eyes.length);
+      const noseResult = await this.randInt(this.state.nose.length);
+      const mouthResult = await this.randInt(this.state.mouth.length);
+      const hairResult = await this.randInt(this.state.hair.length);
+
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+      const data1name = await this.state.head[headResult].name.replace('.png','');
+      this.setState({data1name});
+      const data2name = await this.state.eyes[eyesResult].name.replace('.png','');
+      this.setState({data2name});
+      const data3name = await this.state.nose[noseResult].name.replace('.png','');
+      this.setState({data3name});
+      const data4name = await this.state.mouth[mouthResult].name.replace('.png','');
+      this.setState({data4name});
+      const data5name = await this.state.hair[hairResult].name.replace('.png','');
+      this.setState({data5name});
+
+      var blob0 = new Blob([await this.state.background[backgroundResult]]);
+      var url0  = window.URL.createObjectURL(blob0);
+      var blob1 = new Blob([await this.state.head[headResult]]);
+      var url1  = window.URL.createObjectURL(blob1);
+      var blob2 = new Blob([await this.state.eyes[eyesResult]]);
+      var url2  = window.URL.createObjectURL(blob2);
+      var blob3 = new Blob([await this.state.nose[noseResult]]);
+      var url3  = window.URL.createObjectURL(blob3);
+      var blob4 = new Blob([await this.state.mouth[mouthResult]]);
+      var url4  = window.URL.createObjectURL(blob4);
+      var blob5 = new Blob([await this.state.hair[hairResult]]);
+      var url5  = window.URL.createObjectURL(blob5);
+
+      const  backgroundIm = await loadImage(url0);
+      const  headIm = await loadImage(url1);
+      const  eyesIm = await loadImage(url2);
+      const  noseIm = await loadImage(url3);
+      const  mouthIm = await loadImage(url4);
+      const  hairIm = await loadImage(url5);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(headIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(eyesIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(noseIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(mouthIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(hairIm,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+
+    } else if(this.state.number == 7){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const headResult = await this.randInt(this.state.head.length);
+      const eyesResult = await this.randInt(this.state.eyes.length);
+      const noseResult = await this.randInt(this.state.nose.length);
+      const mouthResult = await this.randInt(this.state.mouth.length);
+      const hairResult = await this.randInt(this.state.hair.length);
+      const beardResult = await this.randInt(this.state.beard.length);
+
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+      const data1name = await this.state.head[headResult].name.replace('.png','');
+      this.setState({data1name});
+      const data2name = await this.state.eyes[eyesResult].name.replace('.png','');
+      this.setState({data2name});
+      const data3name = await this.state.nose[noseResult].name.replace('.png','');
+      this.setState({data3name});
+      const data4name = await this.state.mouth[mouthResult].name.replace('.png','');
+      this.setState({data4name});
+      const data5name = await this.state.hair[hairResult].name.replace('.png','');
+      this.setState({data5name});
+      const data6name = await this.state.beard[beardResult].name.replace('.png','');
+      this.setState({data6name});
+
+      var blob0 = new Blob([await this.state.background[backgroundResult]]);
+      var url0  = window.URL.createObjectURL(blob0);
+      var blob1 = new Blob([await this.state.head[headResult]]);
+      var url1  = window.URL.createObjectURL(blob1);
+      var blob2 = new Blob([await this.state.eyes[eyesResult]]);
+      var url2  = window.URL.createObjectURL(blob2);
+      var blob3 = new Blob([await this.state.nose[noseResult]]);
+      var url3  = window.URL.createObjectURL(blob3);
+      var blob4 = new Blob([await this.state.mouth[mouthResult]]);
+      var url4  = window.URL.createObjectURL(blob4);
+      var blob5 = new Blob([await this.state.hair[hairResult]]);
+      var url5  = window.URL.createObjectURL(blob5);
+      var blob6 = new Blob([await this.state.beard[beardResult]]);
+      var url6  = window.URL.createObjectURL(blob6);
+
+      const  backgroundIm = await loadImage(url0);
+      const  headIm = await loadImage(url1);
+      const  eyesIm = await loadImage(url2);
+      const  noseIm = await loadImage(url3);
+      const  mouthIm = await loadImage(url4);
+      const  hairIm = await loadImage(url5);
+      const  beardIm = await loadImage(url6);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(headIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(eyesIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(noseIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(mouthIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(hairIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(beardIm,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+
+    } else if(this.state.number == 8){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const headResult = await this.randInt(this.state.head.length);
+      const eyesResult = await this.randInt(this.state.eyes.length);
+      const noseResult = await this.randInt(this.state.nose.length);
+      const mouthResult = await this.randInt(this.state.mouth.length);
+      const hairResult = await this.randInt(this.state.hair.length);
+      const beardResult = await this.randInt(this.state.beard.length);
+      const layer7Result = await this.randInt(this.state.layer7items.length);
+
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+      const data1name = await this.state.head[headResult].name.replace('.png','');
+      this.setState({data1name});
+      const data2name = await this.state.eyes[eyesResult].name.replace('.png','');
+      this.setState({data2name});
+      const data3name = await this.state.nose[noseResult].name.replace('.png','');
+      this.setState({data3name});
+      const data4name = await this.state.mouth[mouthResult].name.replace('.png','');
+      this.setState({data4name});
+      const data5name = await this.state.hair[hairResult].name.replace('.png','');
+      this.setState({data5name});
+      const data6name = await this.state.beard[beardResult].name.replace('.png','');
+      this.setState({data6name});
+      const data7name = await this.state.layer7items[layer7Result].name.replace('.png','');
+      this.setState({data7name});
+
+      var blob0 = new Blob([await this.state.background[backgroundResult]]);
+      var url0  = window.URL.createObjectURL(blob0);
+      var blob1 = new Blob([await this.state.head[headResult]]);
+      var url1  = window.URL.createObjectURL(blob1);
+      var blob2 = new Blob([await this.state.eyes[eyesResult]]);
+      var url2  = window.URL.createObjectURL(blob2);
+      var blob3 = new Blob([await this.state.nose[noseResult]]);
+      var url3  = window.URL.createObjectURL(blob3);
+      var blob4 = new Blob([await this.state.mouth[mouthResult]]);
+      var url4  = window.URL.createObjectURL(blob4);
+      var blob5 = new Blob([await this.state.hair[hairResult]]);
+      var url5  = window.URL.createObjectURL(blob5);
+      var blob6 = new Blob([await this.state.beard[beardResult]]);
+      var url6  = window.URL.createObjectURL(blob6);
+      var blob7 = new Blob([await this.state.layer7items[layer7Result]]);
+      var url7  = window.URL.createObjectURL(blob7);
+
+      const  backgroundIm = await loadImage(url0);
+      const  headIm = await loadImage(url1);
+      const  eyesIm = await loadImage(url2);
+      const  noseIm = await loadImage(url3);
+      const  mouthIm = await loadImage(url4);
+      const  hairIm = await loadImage(url5);
+      const  beardIm = await loadImage(url6);
+      const  layer7Im = await loadImage(url7);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(headIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(eyesIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(noseIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(mouthIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(hairIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(beardIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(layer7Im,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+
+    } else if(this.state.number == 9){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const headResult = await this.randInt(this.state.head.length);
+      const eyesResult = await this.randInt(this.state.eyes.length);
+      const noseResult = await this.randInt(this.state.nose.length);
+      const mouthResult = await this.randInt(this.state.mouth.length);
+      const hairResult = await this.randInt(this.state.hair.length);
+      const beardResult = await this.randInt(this.state.beard.length);
+      const layer7Result = await this.randInt(this.state.layer7items.length);
+      const layer8Result = await this.randInt(this.state.layer8items.length);
+
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+      const data1name = await this.state.head[headResult].name.replace('.png','');
+      this.setState({data1name});
+      const data2name = await this.state.eyes[eyesResult].name.replace('.png','');
+      this.setState({data2name});
+      const data3name = await this.state.nose[noseResult].name.replace('.png','');
+      this.setState({data3name});
+      const data4name = await this.state.mouth[mouthResult].name.replace('.png','');
+      this.setState({data4name});
+      const data5name = await this.state.hair[hairResult].name.replace('.png','');
+      this.setState({data5name});
+      const data6name = await this.state.beard[beardResult].name.replace('.png','');
+      this.setState({data6name});
+      const data7name = await this.state.layer7items[layer7Result].name.replace('.png','');
+      this.setState({data7name});
+      const data8name = await this.state.layer8items[layer8Result].name.replace('.png','');
+      this.setState({data8name});
+
+      var blob0 = new Blob([await this.state.background[backgroundResult]]);
+      var url0  = window.URL.createObjectURL(blob0);
+      var blob1 = new Blob([await this.state.head[headResult]]);
+      var url1  = window.URL.createObjectURL(blob1);
+      var blob2 = new Blob([await this.state.eyes[eyesResult]]);
+      var url2  = window.URL.createObjectURL(blob2);
+      var blob3 = new Blob([await this.state.nose[noseResult]]);
+      var url3  = window.URL.createObjectURL(blob3);
+      var blob4 = new Blob([await this.state.mouth[mouthResult]]);
+      var url4  = window.URL.createObjectURL(blob4);
+      var blob5 = new Blob([await this.state.hair[hairResult]]);
+      var url5  = window.URL.createObjectURL(blob5);
+      var blob6 = new Blob([await this.state.beard[beardResult]]);
+      var url6  = window.URL.createObjectURL(blob6);
+      var blob7 = new Blob([await this.state.layer7items[layer7Result]]);
+      var url7  = window.URL.createObjectURL(blob7);
+      var blob8 = new Blob([await this.state.layer8items[layer8Result]]);
+      var url8  = window.URL.createObjectURL(blob8);
+
+      const  backgroundIm = await loadImage(url0);
+      const  headIm = await loadImage(url1);
+      const  eyesIm = await loadImage(url2);
+      const  noseIm = await loadImage(url3);
+      const  mouthIm = await loadImage(url4);
+      const  hairIm = await loadImage(url5);
+      const  beardIm = await loadImage(url6);
+      const  layer7Im = await loadImage(url7);
+      const  layer8Im = await loadImage(url8);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(headIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(eyesIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(noseIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(mouthIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(hairIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(beardIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(layer7Im,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(layer8Im,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+
+    } else if(this.state.number == 10){
+      const backgroundResult = await this.randInt(this.state.background.length);
+      const headResult = await this.randInt(this.state.head.length);
+      const eyesResult = await this.randInt(this.state.eyes.length);
+      const noseResult = await this.randInt(this.state.nose.length);
+      const mouthResult = await this.randInt(this.state.mouth.length);
+      const hairResult = await this.randInt(this.state.hair.length);
+      const beardResult = await this.randInt(this.state.beard.length);
+      const layer7Result = await this.randInt(this.state.layer7items.length);
+      const layer8Result = await this.randInt(this.state.layer8items.length);
+      const layer9Result = await this.randInt(this.state.layer9items.length);
+
+      const data0name = await this.state.background[backgroundResult].name.replace('.png','');
+      this.setState({data0name});
+      const data1name = await this.state.head[headResult].name.replace('.png','');
+      this.setState({data1name});
+      const data2name = await this.state.eyes[eyesResult].name.replace('.png','');
+      this.setState({data2name});
+      const data3name = await this.state.nose[noseResult].name.replace('.png','');
+      this.setState({data3name});
+      const data4name = await this.state.mouth[mouthResult].name.replace('.png','');
+      this.setState({data4name});
+      const data5name = await this.state.hair[hairResult].name.replace('.png','');
+      this.setState({data5name});
+      const data6name = await this.state.beard[beardResult].name.replace('.png','');
+      this.setState({data6name});
+      const data7name = await this.state.layer7items[layer7Result].name.replace('.png','');
+      this.setState({data7name});
+      const data8name = await this.state.layer8items[layer8Result].name.replace('.png','');
+      this.setState({data8name});
+      const data9name = await this.state.layer8items[layer9Result].name.replace('.png','');
+      this.setState({data9name});
+
+      var blob0 = new Blob([await this.state.background[backgroundResult]]);
+      var url0  = window.URL.createObjectURL(blob0);
+      var blob1 = new Blob([await this.state.head[headResult]]);
+      var url1  = window.URL.createObjectURL(blob1);
+      var blob2 = new Blob([await this.state.eyes[eyesResult]]);
+      var url2  = window.URL.createObjectURL(blob2);
+      var blob3 = new Blob([await this.state.nose[noseResult]]);
+      var url3  = window.URL.createObjectURL(blob3);
+      var blob4 = new Blob([await this.state.mouth[mouthResult]]);
+      var url4  = window.URL.createObjectURL(blob4);
+      var blob5 = new Blob([await this.state.hair[hairResult]]);
+      var url5  = window.URL.createObjectURL(blob5);
+      var blob6 = new Blob([await this.state.bearditems[beardResult]]);
+      var url6  = window.URL.createObjectURL(blob6);
+      var blob7 = new Blob([await this.state.layer7items[layer7Result]]);
+      var url7  = window.URL.createObjectURL(blob7);
+      var blob8 = new Blob([await this.state.layer8items[layer8Result]]);
+      var url8  = window.URL.createObjectURL(blob8);
+      var blob9 = new Blob([await this.state.layer9items[layer9Result]]);
+      var url9  = window.URL.createObjectURL(blob9);
+
+      const  backgroundIm = await loadImage(url0);
+      const  headIm = await loadImage(url1);
+      const  eyesIm = await loadImage(url2);
+      const  noseIm = await loadImage(url3);
+      const  mouthIm = await loadImage(url4);
+      const  hairIm = await loadImage(url5);
+      const  beardIm = await loadImage(url6);
+      const  layer7Im = await loadImage(url7);
+      const  layer8Im = await loadImage(url8);
+      const  layer9Im = await loadImage(url9);
+      ctx.drawImage(backgroundIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(headIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(eyesIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(noseIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(mouthIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(hairIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(beardIm,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(layer7Im,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(layer8Im,0,0,imageFormat.width,imageFormat.height);
+      ctx.drawImage(layer9Im,0,0,imageFormat.width,imageFormat.height);
+
+      var png = [];
+
+      png = canvas.toDataURL();
+
+      const result = png;
+      this.state.finish.push(result);
+      this.setState({result});
+    };
+     
+    const name = await this.getRandomName();
+    //console.log(name);
+
+    if(this.state.number == 1){
+      const meta = {
+       
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: []
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 2){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          }         
+        ]
+      } 
+      this.state.JSON.push(meta);
+      
+    } else if(this.state.number == 3){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 4){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 5){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 6){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 7){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          },
+          { 
+            trait_type: this.state.layerName[7],
+            value: await this.state.data6name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 8){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          },
+          { 
+            trait_type: this.state.layerName[7],
+            value: await this.state.data6name,
+          },
+          { 
+            trait_type: this.state.layerName[8],
+            value: await this.state.data7name,
+          },
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 9){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          },
+          { 
+            trait_type: this.state.layerName[7],
+            value: await this.state.data6name,
+          },
+          { 
+            trait_type: this.state.layerName[8],
+            value: await this.state.data7name,
+          },          { 
+            trait_type: this.state.layerName[9],
+            value: await this.state.data8name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+
+    } else if(this.state.number == 10){
+      const meta = {
+      
+        name: `${prefix} #${idx}`,
+        description: `${description} ${name.split('-').join(' ')}`,
+        image : ``,
+        external_url : `${url}`,
+        attributes: [
+    
+          { 
+            trait_type: this.state.layerName[2],
+            value: await this.state.data1name,
+          },
+          { 
+            trait_type: this.state.layerName[3],
+            value: await this.state.data2name,
+          },
+          { 
+            trait_type: this.state.layerName[4],
+            value: await this.state.data3name,
+          },
+          { 
+            trait_type: this.state.layerName[5],
+            value: await this.state.data4name,
+          },
+          { 
+            trait_type: this.state.layerName[6],
+            value: await this.state.data5name,
+          },
+          { 
+            trait_type: this.state.layerName[7],
+            value: await this.state.data6name,
+          },
+          { 
+            trait_type: this.state.layerName[8],
+            value: await this.state.data7name,
+          },
+          { 
+            trait_type: this.state.layerName[9],
+            value: await this.state.data8name,
+          },
+          { 
+            trait_type: this.state.layerName[10],
+            value: await this.state.data9name,
+          }
+        ]
+      } 
+      this.state.JSON.push(meta);
+    };    
+  } 
+
+  async downloadzipPNG() {
+
+    var JSZip = require("jszip");
+    let zip = new JSZip();
+
+    var img = zip.folder("Images");
+
+    for (var i = 1; i < (this.state.finish.length - 1); i++){
+      const imgData = await this.state.finish[i].replace('data:image/png;base64,','');
+      img.file(`${i}.png`, imgData, {base64: true });
+    }
+
+    zip.generateAsync({type:"blob"})
+    .then(function(content){
+      saveAs(content, "Images.zip");
+    });
+  }
+
+  async downloadzipJSON() {
+
+    var JSZip = require("jszip");
+    let zip = new JSZip();
+
+    var file = zip.folder("JSON");
+
+    for (var i = 1; i < (this.state.finish.length - 1); i++){
+      file.file(`${i}.json`, JSON.stringify(this.state.JSON[i]), {base64: false });
+    }
+
+    zip.generateAsync({type:"blob"})
+    .then(function(content){
+      saveAs(content, "JSON.zip");
+    });
+  }
+
+  async addFields(){
+    // Generate a dynamic number of inputs
+    var number = document.getElementById("Layers").value;
+    this.setState({number});
+    // Get the element where the inputs will be added to
+    var container = document.getElementById("container");
+    var x = 1;
+    var y = 0;
+    var value = 0; 
+    var layerName = [];
+    
+    const inputLayerName = event => {
+
+      if(x === 1){
+        value = this.state.background;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+      if(x === 2){
+        value = this.state.head;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+      if(x === 3){
+        value = this.state.eyes;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+      if(x === 4){
+        value = this.state.nose;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+      if(x === 5){
+        value = this.state.mouth;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+      if(x === 6){
+        value = this.state.hair;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+      if(x === 7){
+        value = this.state.beard;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+      if(x === 8){
+        value = this.state.layer7items;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+      if(x === 9){
+        value = this.state.layer8items;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+      if(x === 10){
+        value = this.state.layer9items;
+        layerName[x] = event.target.value;
+        this.setState({layerName});
+      };
+
+      x++;
+    }
+
+    const inputLayer = event => {
+
+      if(y === 0){
+        value = this.state.background;
+      };
+      if(y === 1){
+        value = this.state.head;
+      };
+      if(y === 2){
+        value = this.state.eyes;
+      };
+      if(y === 3){
+        value = this.state.nose;
+      };
+      if(y === 4){
+        value = this.state.mouth;
+      };
+      if(y === 5){
+        value = this.state.hair;
+      };
+      if(y === 6){
+        value = this.state.beard;
+      };
+      if(y === 7){
+        value = this.state.layer7items;
+      };
+      if(y === 8){
+        value = this.state.layer8items;
+      };
+      if(y === 9){
+        value = this.state.layer9items;
+      };
+
+      for (var m = 0; m < event.target.files.length ; m++){
+        value[m] = event.target.files[m];
       }
+      y++;
+    }
+
+    // Remove every children it had before
+    while (container.hasChildNodes()) {
+        container.removeChild(container.lastChild);
+    }
+
+    for (var i = 0; i <number; i++){
+ 
+      container.appendChild(document.createTextNode("Layer " + (i+1)));
+
+      var input = document.createElement("input");
+
+      input.id = 'Layer' + i;
+      input.name = 'layer' + i;
+      input.type = 'text';
+      input.placeholder = 'Enter Layer Name..'
+      input.className = "form-control form-control-md"; 
+      input.onchange = inputLayerName;
+
+      container.appendChild(input);     
+
+      var input = document.createElement("input");
+
+      input.id = 'Layer' + i;
+      input.name = 'layer' + i;
+      input.type = 'file';
+      input.multiple ='multiple';
+      input.className = "form-control form-control-md"; 
+      input.onchange = inputLayer;
+
+
+      container.appendChild(input);  
+      container.appendChild(document.createElement("br"));   
     }
   }
 
- async downloadFile(name, file) {
-    var link = document.createElement("a");
-    var blob = new Blob([file]);
-    var url  = window.URL.createObjectURL(blob);
-    link.setAttribute('download', name);
-    link.setAttribute('href', url);
-    link.click();
-    link.remove();
-  }
-
-  async downloadPNG(name, png) {
-    var link = document.createElement('a');
-    link.download = name;
-    link.style.opacity = "0";
-    link.href = png;
-    link.click();
-    link.remove();
-  }
 
   constructor(props) {
     super(props)
@@ -620,7 +2308,8 @@ class App extends Component {
       minute: '0',
       second: '0',
       name: 'undefined',
-      strength: 'undefined',
+      description: 'undefined',
+
       layer0: 'undefined',
       layer1: 'undefined',
       layer2: 'undefined',
@@ -628,15 +2317,30 @@ class App extends Component {
       layer4: 'undefined',
       layer5: 'undefined',
       layer6: 'undefined',
-      background: 'undefined',
-      head: 'undefined',
-      eyes: 'undefined',
-      nose: 'undefined',
-      mouth: 'undefined',
-      hair: 'undefined',
-      beard: 'undefined',
-      imgData: []
-      }
+      layer7: 'undefined',
+      layer8: 'undefined',
+      layer9: 'undefined',
+
+      background: [],
+      head: [],
+      eyes: [],
+      nose: [],
+      mouth: [],
+      hair: [],
+      beard: [], 
+      layer7items: [],
+      layer8items: [],
+      layer9items: [],
+      
+      layerName: [],
+      itemsInput: [],
+      finish: [],
+      svg: [],
+      png: []
+
+    }
+      this.addFields = this.addFields.bind(this);
+      //this.downloadzipPNG = this.downloadzipPNG.bind(this);
   }
 
   render() {
@@ -807,88 +2511,30 @@ class App extends Component {
                             <Tab eventKey="NFT Factory" title="NFT Factory">
 
                               <div>  
-                                <br></br> 
-                                <h5>Input Layers (folder):</h5>   
+                                <br></br>  
 
                                 <form method="post" encType="multipart/form-data" action="#" onSubmit={(e) => {
                                   e.preventDefault()  
-                                  let description = this.Description.value
-                                  let url = this.Url.value
-                                  this.generate(description, url);  
-                                 
+                                  let prefix = this.Prefix.value;
+                                  let description = this.Description.value;
+                                  let url = this.Url.value;
+                                  let rarity = this.Rarity.value;
+                                  let item = this.Item.value;
+
+                                  let items = +item + 1;
+
+                                  this.generate(prefix, description, url, rarity, items);                         
                                 }}>
-                                  <label htmlFor="Background" style={{float: "left"}}>Background:</label>
-                                      <input
-                                        id='Background' 
-                                        multiple directory="" 
-                                        webkitdirectory="" 
-                                        mozdirectory=""
-                                        type='file'
-                                        onChange={this.inputBackground}                                       
-                                        className="form-control form-control-md"/>  
 
-                                  <label htmlFor="Head" style={{float: "left"}}>Head:</label>
-                                      <input
-                                        id='Head' 
-                                        multiple directory="" 
-                                        webkitdirectory="" 
-                                        mozdirectory=""
-                                        type='file'
-                                        onChange={this.inputHead}
-                                        className="form-control form-control-md"/>  
-
-                                  <label htmlFor="Eyes" style={{float: "left"}}>Eyes:</label>
-                                      <input
-                                        id='Eyes' 
-                                        multiple directory="" 
-                                        webkitdirectory="" 
-                                        mozdirectory=""
-                                        type='file'
-                                        onChange={this.inputEyes}
-                                        className="form-control form-control-md"/>  
-
-                                  <label htmlFor="Nose" style={{float: "left"}}>Nose:</label>
-                                      <input
-                                        id='Nose' 
-                                        multiple directory="" 
-                                        webkitdirectory="" 
-                                        mozdirectory=""
-                                        type='file'
-                                        onChange={this.inputNose}
-                                        className="form-control form-control-md"/>  
-
-                                  <label htmlFor="Mouth" style={{float: "left"}}>Mouth:</label>
-                                      <input
-                                        id='Mouth' 
-                                        multiple directory="" 
-                                        webkitdirectory="" 
-                                        mozdirectory=""
-                                        type='file'
-                                        onChange={this.inputMouth}
-                                        className="form-control form-control-md"/> 
-
-                                  <label htmlFor="Hair" style={{float: "left"}}>Hair:</label>
-                                      <input
-                                        id='Hair' 
-                                        multiple directory="" 
-                                        webkitdirectory="" 
-                                        mozdirectory=""
-                                        type='file'
-                                        onChange={this.inputHair}
-                                        className="form-control form-control-md"/> 
-
-                                  <label htmlFor="Beard" style={{float: "left"}}>Beard:</label>
-                                      <input
-                                        id='Beard' 
-                                        multiple directory="" 
-                                        webkitdirectory="" 
-                                        mozdirectory=""
-                                        type='file'
-                                        onChange={this.inputBeard}
-                                        className="form-control form-control-md"/> 
-
-                                  <br></br>
                                   <h5>Metadata:</h5>   
+
+                                  <label htmlFor="Name" style={{float: "left"}}>Name:</label> 
+                                    <input
+                                      id='Name' 
+                                      type='text'
+                                      ref={(input) => { this.Prefix = input }}
+                                      className="form-control form-control-md"
+                                      placeholder='Prefix..' />
 
                                   <label htmlFor="Description" style={{float: "left"}}>Description:</label> 
                                     <input
@@ -898,15 +2544,47 @@ class App extends Component {
                                       className="form-control form-control-md"
                                       placeholder='Image of..' />
 
-                                    <label htmlFor="External_Url" style={{float: "left"}}>External_Url:</label>
+                                  <label htmlFor="External_Url" style={{float: "left"}}>External_Url:</label>
                                     <input
                                       id='External_Url'
-                                      type='text'
+                                      type='url'
                                       ref={(input) => { this.Url = input }}
                                       className="form-control form-control-md"
-                                      placeholder='url..'/>     
+                                      placeholder='https://example.com'/> 
 
-                                  <br></br>
+                                  <label htmlFor="Rarity" style={{float: "left"}}>Rarity:</label>
+                                    <input
+                                      id='Rarity'
+                                      type='number'
+                                      ref={(input) => { this.Rarity = input }}
+                                      className="form-control form-control-md"
+                                      placeholder='Rarity must be between 1-100'
+                                      min ="1"
+                                      max = "100"
+                                      required/> 
+
+                                  <label htmlFor="Items" style={{float: "left"}}>Number of Items:</label>
+                                    <input
+                                      id='Items'
+                                      type='number'
+                                      ref={(input) => { this.Item = input }}
+                                      className="form-control form-control-md"
+                                      placeholder='May not be more than possible combinations..'
+                                      required/> 
+
+                                  <br></br>  
+                                  <h5>Input Layers:</h5>  
+
+                                  <label htmlFor="Layers" style={{float: "left"}}>Number of layers: (max. 10)</label>
+                                      <input
+                                        id='Layers' 
+                                        type='number'
+                                        min ="1"
+                                        max = "10"
+                                        className="form-control form-control-md"/> 
+
+                                <a href="#" id="filldetails" onClick={this.addFields}>Fill Details</a>
+                                <div id="container"/>
 
                                   <button type='submit' className='btn btn-primary'>Generate</button>
                                   <br></br>
@@ -914,10 +2592,11 @@ class App extends Component {
                                   <div>
                                     <h4>Images:</h4>                   
                                   </div>
-                                  <div id="board"></div>
-                                                         
+                                  <div id="board"></div>                                
                                   
                                 </form>
+
+                                <div id="containerButton"/>
 
                               </div>
 
@@ -933,3 +2612,4 @@ class App extends Component {
   }
 }
 export default App;
+
