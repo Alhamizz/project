@@ -77,7 +77,7 @@ table, th {
 }
 
 input[type=number]:focus, input[type=text]:focus {
-  width: 100%;
+  width: 50%;
   padding: 5px 5px;
 
   box-sizing: border-box;
@@ -102,5 +102,11 @@ span {
   color: 	#0000FF;
   float: right;
   font-size:20px;
+}
+
+u
+{
+	text-decoration: underline;
+  text-decoration-color: rgb(22, 84, 218);
 }
 
