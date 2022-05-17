@@ -664,10 +664,6 @@ class App extends Component {
       this.state.layer[number] = layerItems;
     }
 
-    for (var n = 0; n < event.target.files.length ; n++){
-      this.state.layer[number][n]["rarity"] = this.state.layer[number].length;
-    }
-
     console.log(this.state.layer)
     
     var possibleCombinations = this.state.possibleCombinations;
@@ -675,6 +671,13 @@ class App extends Component {
     this.setState({possibleCombinations});
     var rarityCombinations = this.state.rarity * possibleCombinations;
     this.setState({rarityCombinations})
+
+    for (var z = 0; z < (this.state.layer.length - 1); z++){
+      for (var n = 0; n < event.target.files.length ; n++){
+        this.state.layer[z+1][n]["rarity"] = rarityCombinations / this.state.layer[z+1].length;
+      }
+    }
+
   }
 
   fillDetails = () => {
@@ -691,8 +694,8 @@ class App extends Component {
         input2.name = 'item' + this.state.click;
         input2.type = 'number';
         input2.min = '1';
-        input2.max = this.state.layer[this.state.number].length;
-        input2.defaultValue = this.state.layer[this.state.number][this.state.click].rarity;
+        input2.max = +this.state.layer[this.state.number].length;
+        input2.defaultValue = +this.state.layer[this.state.number][this.state.click].rarity;
         input2.onchange = this.itemRarity;
   
         container.appendChild(input2);  
@@ -709,18 +712,31 @@ class App extends Component {
   }
 
   itemRarity = event => {
-    var itemRarity = 0;;
+    var itemRarity = 0;
 
-    if ((this.state.click-1) == 0){
+    /*if (this.state.press == 0){
       var itemCombinations = this.state.rarityCombinations;
-    } else if ((this.state.click-1) <this.state.layer[this.state.number].length){
+    } else if (this.state.press <this.state.layer[this.state.number].length){
       itemCombinations = this.state.itemCombinations;
     }
+    this.state.press++;*/
 
+    var itemCombinations = this.state.rarityCombinations;
+
+    this.state.start = 1;
     itemRarity = event.target.value;
     this.state.layer[this.state.number][this.state.click - 1]["rarity"] = itemRarity;
   
-    itemCombinations = itemCombinations - ( this.state.layer[this.state.number].length - itemRarity);
+    for (var z = 0; z < (this.state.layer.length-1); z++){
+      var temp = 0;
+      for (var n = 0; n < this.state.layer[z+1].length ; n++){
+        temp = +temp + +this.state.layer[z+1][n].rarity;
+      }
+      console.log(temp)
+      if ( temp < itemCombinations){
+        itemCombinations = temp;
+      }
+    }
     this.setState({itemCombinations})
     console.log(this.state.layer)
   }
@@ -731,6 +747,7 @@ class App extends Component {
     number = number + 1;
     this.setState({number});
     var click = 0;
+    this.state.press =0;
 
     var container = document.getElementById("container");
     
@@ -746,9 +763,6 @@ class App extends Component {
         layerItems[m] = event.target.files[m];
         this.state.layer[number] = layerItems;
       }
-      for (var n = 0; n < event.target.files.length ; n++){
-        this.state.layer[number][n]["rarity"] = this.state.layer[number].length;
-      }
 
       console.log(this.state.layer)
       
@@ -757,9 +771,14 @@ class App extends Component {
       this.setState({possibleCombinations});
       var rarityCombinations = this.state.rarity * possibleCombinations;
       this.setState({rarityCombinations})
-
       var itemCombinations = rarityCombinations - ( this.state.layer[number].length - this.state.itemCombinations);
       this.setState({itemCombinations})  
+
+      for (var z = 0; z < (this.state.layer.length-1); z++){
+        for (var n = 0; n < this.state.layer[z+1].length ; n++){
+          this.state.layer[z+1][n]["rarity"] = rarityCombinations / this.state.layer[z+1].length;
+        }
+      }
     }
 
     const fillDetails = () => {
@@ -772,7 +791,7 @@ class App extends Component {
           input2.id = 'Item' + click;
           input2.name = 'item' + click;
           input2.type = 'number';
-          input2.defaultValue = this.state.layer[number][click].rarity;
+          input2.defaultValue = +this.state.layer[number][click].rarity;
           input2.onchange = itemRarity;
     
           container.appendChild(input2);  
@@ -791,17 +810,27 @@ class App extends Component {
 
     const itemRarity = event => {
       var itemRarity = 0;
-      var press = this.state.press;
-      if (press == 0){
+      /*var press = this.state.press;
+      if (press == 0 ){
         var itemCombinations = this.state.rarityCombinations;
-      } else if (press <this.state.layer[number].length){
+      } else if (press <this.state.layer[number].length || this.state.start == 1){
         itemCombinations = this.state.itemCombinations;
       }
-      this.state.press++;
+      this.state.press++;*/
+      var itemCombinations = this.state.rarityCombinations;
       itemRarity = event.target.value;
       this.state.layer[number][click-1]["rarity"] = itemRarity;     
       
-      itemCombinations = itemCombinations - ( this.state.layer[number].length - itemRarity);
+      for (var z = 0; z < (this.state.layer.length-1); z++){
+        var temp = 0;
+        for (var n = 0; n < this.state.layer[z+1].length ; n++){
+          temp = +temp + +this.state.layer[z+1][n].rarity;
+        }
+        if ( temp < itemCombinations){
+          itemCombinations = temp;
+        }
+      }
+      console.log(temp)
       this.setState({itemCombinations})  
       console.log(this.state.layer)
 
@@ -881,7 +910,8 @@ class App extends Component {
       takenImage: [],
       end: 0,
       click: 0,
-      press: 0
+      press: 0,
+      start: 0
 
     }
       this.addFields = this.addFields.bind(this);
