@@ -487,7 +487,6 @@ class App extends Component {
   } 
 
   async createPNG(idx, prefix, description, url, rarity, items) {
-    
 
     for(var l = 0; l < 10001; l++){
       if (l == 10000){
@@ -516,22 +515,26 @@ class App extends Component {
       }
 
       for(var n = 0; n < (this.state.layer.length - 1) && !stop; n++){
-        for ( var m = 0; m < randomNumber.length; m++){
+        for ( var m = 0; m < this.state.layer[n+1].length; m++){
           //console.log(this.state.takenImage[n][m])
           //console.log(randomNumber[m])
           if (this.state.layer[n+1][m].rarity != 0 && this.state.layer[n+1][m].rarity != this.state.layer[n+1].length){
-            for (var o = 0; o < (this.state.takenImage.length - 1); o++){
-              if (randomNumber[m] == await this.state.takenImage[o+1][m]){
-                repeated1 = repeated1 + 1;              
-                //console.log(repeated1);
+
+            if (randomNumber[n] == m){
+              for (var o = 0; o < (this.state.takenImage.length - 1); o++){
+                if (randomNumber[n] == await this.state.takenImage[o+1][n]){
+                  repeated1 = repeated1 + 1;              
+                  //console.log(repeated1);
+                }
+              }
+              if (repeated1 >= +this.state.layer[n+1][m].rarity * rarity){
+                stop = true;
+                console.log('item repeat')
+                break;
               }
             }
-            if (repeated1 >= +this.state.layer[n+1][m].rarity){
-              stop = true;
-              console.log('item repeat')
-              break;
-            }
           } 
+          repeated1 = 0;
         }
       }
 
@@ -661,8 +664,8 @@ class App extends Component {
       this.state.layer[number] = layerItems;
     }
 
-    for (var m = 0; m < event.target.files.length ; m++){
-      this.state.layer[number][m]["rarity"] = this.state.layer[number].length;
+    for (var n = 0; n < event.target.files.length ; n++){
+      this.state.layer[number][n]["rarity"] = this.state.layer[number].length;
     }
 
     console.log(this.state.layer)
@@ -711,7 +714,7 @@ class App extends Component {
     if ((this.state.click-1) == 0){
       var itemCombinations = this.state.rarityCombinations;
     } else if ((this.state.click-1) <this.state.layer[this.state.number].length){
-      var itemCombinations = this.state.itemCombinations;
+      itemCombinations = this.state.itemCombinations;
     }
 
     itemRarity = event.target.value;
@@ -743,8 +746,8 @@ class App extends Component {
         layerItems[m] = event.target.files[m];
         this.state.layer[number] = layerItems;
       }
-      for (var m = 0; m < event.target.files.length ; m++){
-        this.state.layer[number][m]["rarity"] = this.state.layer[number].length;
+      for (var n = 0; n < event.target.files.length ; n++){
+        this.state.layer[number][n]["rarity"] = this.state.layer[number].length;
       }
 
       console.log(this.state.layer)
@@ -754,6 +757,9 @@ class App extends Component {
       this.setState({possibleCombinations});
       var rarityCombinations = this.state.rarity * possibleCombinations;
       this.setState({rarityCombinations})
+
+      var itemCombinations = rarityCombinations - ( this.state.layer[number].length - this.state.itemCombinations);
+      this.setState({itemCombinations})  
     }
 
     const fillDetails = () => {
@@ -785,11 +791,13 @@ class App extends Component {
 
     const itemRarity = event => {
       var itemRarity = 0;
-      if ((click-1) == 0){
+      var press = this.state.press;
+      if (press == 0){
         var itemCombinations = this.state.rarityCombinations;
-      } else if ((click-1) <this.state.layer[number].length){
-        var itemCombinations = this.state.itemCombinations;
+      } else if (press <this.state.layer[number].length){
+        itemCombinations = this.state.itemCombinations;
       }
+      this.state.press++;
       itemRarity = event.target.value;
       this.state.layer[number][click-1]["rarity"] = itemRarity;     
       
@@ -859,6 +867,8 @@ class App extends Component {
       number : 0,
       rarity : 1,
       possibleCombinations: 1,
+      rarityCombinations: 1,
+      itemCombinations : 0,
 
       layerName: [],
       layer:[],
@@ -870,7 +880,8 @@ class App extends Component {
 
       takenImage: [],
       end: 0,
-      click: 0
+      click: 0,
+      press: 0
 
     }
       this.addFields = this.addFields.bind(this);
