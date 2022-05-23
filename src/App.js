@@ -92,7 +92,6 @@ function svgUrlToPng(svgUrl, callback) {
 
 class App extends Component {
   
-
 // MENU 1 COUNTDOWN
   async countdown(datetime){
 
@@ -240,14 +239,19 @@ class App extends Component {
   
 // MENU 3 NFT FACTORY
 
-  async generate(prefix, description, url, rarity, items){  
+  async generate(prefix, description, url, rarity, items){ 
 
     var brd = document.getElementById("board");
     var tbl = document.createElement("table");
     var tblBody = document.createElement("tbody");
     var row = document.createElement("tr");
+    var cell = document.createElement("td");
     var i = 0;
     var idx = items ;
+
+    while (brd.hasChildNodes()) {
+      brd.removeChild(brd.lastChild);
+    }
 
     const data0 = await this.state.layer[1][0]; 
     const data0name = data0.name;
@@ -261,12 +265,16 @@ class App extends Component {
     this.setState({finish});
     var JSON = [];
     this.setState({JSON});
+    var takenImage = [];
+    this.setState({takenImage});
 
     do {
       if(idx == 0){
+
         var containerButton = document.getElementById("containerButton");
         containerButton.appendChild(document.createElement("br"));   
         var button = document.createElement("button");
+
         button.innerHTML = 'Download'
         button.className='btn btn-primary'
         idx--;
@@ -285,7 +293,7 @@ class App extends Component {
           if ( i === 0 || i === 4 ){
             i = 1;
             row = document.createElement("tr");
-            var cell = document.createElement("td");
+            cell = document.createElement("td");
             cell.innerHTML = `<img src=${this.state.result}  />`;  
             //console.log(this.state.result);
             row.appendChild(cell);
@@ -305,7 +313,7 @@ class App extends Component {
         }
       } else {
 
-        await this.createPNG(this.state.idx, prefix, description, url, rarity, items);
+        await this.createPNG(idx, prefix, description, url, rarity, items);
         await timeout(500); //for 0.5 sec delay
 
         if ( idx < items && idx > 0){
@@ -334,8 +342,6 @@ class App extends Component {
       idx--;
 
     }
-
- 
 
     } while (idx >= 0 && this.state.end === 0);
   }
@@ -488,57 +494,67 @@ class App extends Component {
 
   async createPNG(idx, prefix, description, url, rarity, items) {
 
-    for(var l = 0; l < 10001; l++){
-      if (l == 10000){
+    var containerButton = document.getElementById("containerButton");
+    containerButton.appendChild(document.createElement("br"));   
+    while (containerButton.hasChildNodes()) {
+      containerButton.removeChild(containerButton.lastChild);
+    }
+
+    for(var l = 0; l < +this.state.itemCombinations + 2; l++){
+      if (l == +this.state.itemCombinations+1){
         console.log('end');
         this.state.end = 1;
         this.state.idx = 0;
         break;
       }
-      var repeated = 0;
-      var repeated1 = 0;
-      var stop = false;
-      var itemsName = [];
-      var randomNumber = [];
 
-      console.log('start')
-      for(var i = 0; i < (this.state.layer.length - 1); i++){
-        randomNumber[i] = await this.randInt(this.state.layer[i+1].length);
-        console.log(randomNumber)
-      }
+      do {
+        console.log('start')
+        var stop = false;
+        var repeated = 0;
+        var repeated1 = 0;
+        var itemsName = [];
+        var randomNumber = [];
 
-      for(var k = 0; k < (this.state.takenImage.length - 1); k++){
-        if(randomNumber.toString() === this.state.takenImage[k+1].toString()){
-          repeated = repeated + 1;
-          //console.log(repeated);
+        for(var i = 0; i < (this.state.layer.length - 1); i++){
+          randomNumber[i] = await this.randInt(this.state.layer[i+1].length);
+          console.log(randomNumber)
         }
-      }
-
-      for(var n = 0; n < (this.state.layer.length - 1) && !stop; n++){
-        for ( var m = 0; m < this.state.layer[n+1].length; m++){
-          //console.log(this.state.takenImage[n][m])
-          //console.log(randomNumber[m])
-          if (this.state.layer[n+1][m].rarity != 0 && this.state.layer[n+1][m].rarity != this.state.layer[n+1].length){
-
-            if (randomNumber[n] == m){
-              for (var o = 0; o < (this.state.takenImage.length - 1); o++){
-                if (randomNumber[n] == await this.state.takenImage[o+1][n]){
-                  repeated1 = repeated1 + 1;              
-                  //console.log(repeated1);
+  
+        for(var k = 0; k < (this.state.takenImage.length - 1); k++){
+          if(randomNumber.toString() === this.state.takenImage[k+1].toString()){
+            repeated = repeated + 1;
+            //console.log(repeated);
+          }
+        }
+  
+        for(var n = 0; n < (this.state.layer.length - 1) && !stop; n++){
+          for ( var m = 0; m < this.state.layer[n+1].length; m++){
+            //console.log(this.state.takenImage[n][m])
+            //console.log(randomNumber[m])
+            if (this.state.layer[n+1][m].rarity != 0 && this.state.layer[n+1][m].rarity != this.state.layer[n+1].length){
+  
+              if (randomNumber[n] == m){
+                for (var o = 0; o < (this.state.takenImage.length - 1); o++){
+                  if (randomNumber[n] == await this.state.takenImage[o+1][n]){
+                    repeated1 = repeated1 + 1;              
+                    //console.log(repeated1);
+                  }
+                }
+                if (repeated1 >= +this.state.layer[n+1][m].rarity * rarity){
+                  stop = true;
+                  console.log('item repeat')
+                  break;
                 }
               }
-              if (repeated1 >= +this.state.layer[n+1][m].rarity * rarity){
-                stop = true;
-                console.log('item repeat')
-                break;
-              }
-            }
-          } 
-          repeated1 = 0;
+            } 
+            repeated1 = 0;
+          }
         }
+        console.log('stop')
       }
+      while (stop == true || repeated >= rarity);
 
-      console.log(stop)
       if (repeated < rarity && !stop){
         this.state.takenImage.push(randomNumber);
         console.log('print')
@@ -670,14 +686,15 @@ class App extends Component {
     possibleCombinations = possibleCombinations * this.state.layer[number].length;
     this.setState({possibleCombinations});
     var rarityCombinations = this.state.rarity * possibleCombinations;
-    this.setState({rarityCombinations})
+    this.setState({rarityCombinations});
+    var itemCombinations = rarityCombinations;
+    this.setState({itemCombinations});
 
     for (var z = 0; z < (this.state.layer.length - 1); z++){
       for (var n = 0; n < event.target.files.length ; n++){
         this.state.layer[z+1][n]["rarity"] = rarityCombinations / this.state.layer[z+1].length;
       }
     }
-
   }
 
   fillDetails = () => {
@@ -695,7 +712,7 @@ class App extends Component {
         input2.type = 'number';
         input2.min = '1';
         input2.max = +this.state.layer[this.state.number].length;
-        input2.defaultValue = +this.state.layer[this.state.number][this.state.click].rarity;
+        input2.defaultValue = +this.state.layer[1][this.state.click].rarity;
         input2.onchange = this.itemRarity;
   
         container.appendChild(input2);  
@@ -713,19 +730,10 @@ class App extends Component {
 
   itemRarity = event => {
     var itemRarity = 0;
-
-    /*if (this.state.press == 0){
-      var itemCombinations = this.state.rarityCombinations;
-    } else if (this.state.press <this.state.layer[this.state.number].length){
-      itemCombinations = this.state.itemCombinations;
-    }
-    this.state.press++;*/
-
     var itemCombinations = this.state.rarityCombinations;
 
-    this.state.start = 1;
     itemRarity = event.target.value;
-    this.state.layer[this.state.number][this.state.click - 1]["rarity"] = itemRarity;
+    this.state.layer[1][this.state.click - 1]["rarity"] = itemRarity;
   
     for (var z = 0; z < (this.state.layer.length-1); z++){
       var temp = 0;
@@ -770,9 +778,9 @@ class App extends Component {
       possibleCombinations = possibleCombinations * this.state.layer[number].length;
       this.setState({possibleCombinations});
       var rarityCombinations = this.state.rarity * possibleCombinations;
-      this.setState({rarityCombinations})
-      var itemCombinations = rarityCombinations - ( this.state.layer[number].length - this.state.itemCombinations);
-      this.setState({itemCombinations})  
+      this.setState({rarityCombinations});
+      var itemCombinations = rarityCombinations;
+      this.setState({itemCombinations});  
 
       for (var z = 0; z < (this.state.layer.length-1); z++){
         for (var n = 0; n < this.state.layer[z+1].length ; n++){
@@ -784,19 +792,19 @@ class App extends Component {
     const fillDetails = () => {
       if (click <this.state.layer[number].length){
  
-          container.appendChild(document.createTextNode("Item " + (click+1) + ": "));   
+        container.appendChild(document.createTextNode("Item " + (click+1) + ": "));   
     
-          var input2 = document.createElement("input");
+        var input2 = document.createElement("input");
     
-          input2.id = 'Item' + click;
-          input2.name = 'item' + click;
-          input2.type = 'number';
-          input2.defaultValue = +this.state.layer[number][click].rarity;
-          input2.onchange = itemRarity;
+        input2.id = 'Item' + click;
+        input2.name = 'item' + click;
+        input2.type = 'number';
+        input2.defaultValue = +this.state.layer[number][click].rarity;
+        input2.onchange = itemRarity;
     
-          container.appendChild(input2);  
-          container.appendChild(document.createElement("br"));  
-          click++; 
+        container.appendChild(input2);  
+        container.appendChild(document.createElement("br"));  
+        click++; 
 
       } else {
         for (var j = 0; j <(+this.state.layer[number].length * 3); j++){
@@ -805,18 +813,11 @@ class App extends Component {
         console.log(this.state.layer[number].length * 3)
         click = 0;
       }
-
     }
 
     const itemRarity = event => {
       var itemRarity = 0;
-      /*var press = this.state.press;
-      if (press == 0 ){
-        var itemCombinations = this.state.rarityCombinations;
-      } else if (press <this.state.layer[number].length || this.state.start == 1){
-        itemCombinations = this.state.itemCombinations;
-      }
-      this.state.press++;*/
+
       var itemCombinations = this.state.rarityCombinations;
       itemRarity = event.target.value;
       this.state.layer[number][click-1]["rarity"] = itemRarity;     
@@ -830,7 +831,6 @@ class App extends Component {
           itemCombinations = temp;
         }
       }
-      console.log(temp)
       this.setState({itemCombinations})  
       console.log(this.state.layer)
 
@@ -870,6 +870,7 @@ class App extends Component {
 
     container.appendChild(details); 
 
+    container.appendChild(document.createElement("br"));   
     container.appendChild(document.createElement("br"));   
   }
 
@@ -1106,6 +1107,7 @@ class App extends Component {
                                 <br></br> 
 
                                 <div id="container"/>
+                                <br></br>
                                 <button id="addFields" onClick={this.addFields} className='btn btn-primary'>Add Layer</button> 
 
                                 <br></br> 
