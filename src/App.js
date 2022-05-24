@@ -79,8 +79,8 @@ function svgUrlToPng(svgUrl, callback) {
   document.body.appendChild(svgImage);
   svgImage.onload = () => {
     const canvas = document.createElement('canvas');
-    canvas.width = svgImage.clientWidth;
-    canvas.height = svgImage.clientHeight;
+    canvas.width = 250;
+    canvas.height = 250;
     const canvasCtx = canvas.getContext('2d');
     canvasCtx.drawImage(svgImage, 0, 0);
     const imgData = canvas.toDataURL('image/png');
@@ -235,7 +235,6 @@ class App extends Component {
       );
     }
   };
-
   
 // MENU 3 NFT FACTORY
 
@@ -270,7 +269,6 @@ class App extends Component {
 
     do {
       if(idx == 0){
-
         var containerButton = document.getElementById("containerButton");
         containerButton.appendChild(document.createElement("br"));   
         var button = document.createElement("button");
@@ -285,9 +283,9 @@ class App extends Component {
       }.bind(this);
         containerButton.appendChild(button);
 
-    } else {
+      } else {
       if(imageType == 'svg'){
-        await this.createImage(this.state.idx, prefix, description, url, rarity, items);
+        await this.createImage(idx, prefix, description, url, rarity, items);
         await timeout(500); //for 0.5 sec delay
         if ( idx < items && idx > 0){
           if ( i === 0 || i === 4 ){
@@ -295,7 +293,6 @@ class App extends Component {
             row = document.createElement("tr");
             cell = document.createElement("td");
             cell.innerHTML = `<img src=${this.state.result}  />`;  
-            //console.log(this.state.result);
             row.appendChild(cell);
             tblBody.appendChild(row);        
             tbl.appendChild(tblBody);
@@ -328,7 +325,7 @@ class App extends Component {
             tbl.appendChild(tblBody);
             brd.appendChild(tbl);
     
-          }else {
+          } else {
             i = i + 1;
             cell = document.createElement("td");
             cell.innerHTML = `<img src=${this.state.result}  />`;
@@ -336,13 +333,11 @@ class App extends Component {
             tblBody.appendChild(row);        
             tbl.appendChild(tblBody);
             brd.appendChild(tbl);
-          } 
-        }     
-      }   
-      idx--;
-
-    }
-
+            } 
+          }     
+        }   
+        idx--;
+      }
     } while (idx >= 0 && this.state.end === 0);
   }
 
@@ -356,70 +351,95 @@ class App extends Component {
 
   async getRandomName() {
     const takenNames = {};
-      const adjectives = 'fired trashy tubular nasty jacked swol buff ferocious firey flamin agnostic artificial bloody crazy cringey crusty dirty eccentric glutinous harry juicy simple stylish awesome creepy corny freaky shady sketchy lame sloppy hot intrepid juxtaposed killer ludicrous mangy pastey ragin rusty rockin sinful shameful stupid sterile ugly vascular wild young old zealous flamboyant super sly shifty trippy fried injured depressed anxious clinical'.split(' ');
-      const names = 'aaron bart chad dale earl fred grady harry ivan jeff joe kyle lester steve tanner lucifer todd mitch hunter mike arnold norbert olaf plop quinten randy saul balzac tevin jack ulysses vince will xavier yusuf zack roger raheem rex dustin seth bronson dennis'.split(' ');
+    const adjectives = 'fired trashy tubular nasty jacked swol buff ferocious firey flamin agnostic artificial bloody crazy cringey crusty dirty eccentric glutinous harry juicy simple stylish awesome creepy corny freaky shady sketchy lame sloppy hot intrepid juxtaposed killer ludicrous mangy pastey ragin rusty rockin sinful shameful stupid sterile ugly vascular wild young old zealous flamboyant super sly shifty trippy fried injured depressed anxious clinical'.split(' ');
+    const names = 'aaron bart chad dale earl fred grady harry ivan jeff joe kyle lester steve tanner lucifer todd mitch hunter mike arnold norbert olaf plop quinten randy saul balzac tevin jack ulysses vince will xavier yusuf zack roger raheem rex dustin seth bronson dennis'.split(' ');
         
-      const randAdj = await this.randElement(adjectives);
-      const randName = await this.randElement(names);
-      const name = `${randAdj}-${randName}`;
+    const randAdj = await this.randElement(adjectives);
+    const randName = await this.randElement(names);
+    const name = `${randAdj}-${randName}`;
 
-      if (takenNames[name] || !name) {
-        return this.getRandomName();
-      } else {
-        takenNames[name] = name;
-        return name;
-      }
+    if (takenNames[name] || !name) {
+      return this.getRandomName();
+    } else {
+      takenNames[name] = name;
+      return name;
+    }
   }
 
   async combineImage(layer) {
-
-      const template = `
-      <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <layer/>
-      </svg>
-      ` 
+    const template = `
+    <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <layer/>
+    </svg>
+    ` 
   
-      const final = template
+    const final = template
       .replace('<layer/>', await layer)
   
-      return final;
+    return final;
   }
 
   async checkImage(rarity){ 
 
-    var rarityCombinations = rarity * this.state.possibleCombinations;
     var layerImage = [];
     var itemsName = [];  
     var randomNumber = [];
-    console.log(await this.state.idx)
 
-    for(var l = 0; l < (rarityCombinations+5); l++){
-      if (l === rarityCombinations){
-        console.log('No more possible combinations');
+    for(var l = 0; l < +this.state.itemCombinations + 2; l++){
+      if (l == +this.state.itemCombinations+1){
+        console.log('end');
         this.state.end = 1;
-        console.log(this.state.finish.length);
+        this.state.idx = 0;
         break;
       }
       var repeated = 0;
 
-      console.log('start')
-      for(var i = 0; i < (this.state.layer.length - 1); i++){
-        randomNumber[i] = await this.randInt(this.state.layer[i + 1].length);
-        if (i != 0){
-          itemsName[i + 1] = await this.state.layer[i + 1][randomNumber[i]].name.replace('.svg','');
-        }
-      }
+      do {
+        console.log('start')
+        var stop = false;
+        var repeated = 0;
+        var repeated1 = 0;
+        var itemsName = [];
+        var randomNumber = [];
 
-      for(var k = 0; k < (this.state.takenImage.length ); k++){
-        console.log(randomNumber.join(''))
-        console.log(await this.state.takenImage[k])
-        if(randomNumber.join('') === await this.state.takenImage[k]){
-          repeated = repeated + 1;
-          console.log(repeated);
+        for(var i = 0; i < (this.state.layer.length - 1); i++){
+          randomNumber[i] = await this.randInt(this.state.layer[i + 1].length);
+          if (i != 0){
+            itemsName[i + 1] = await this.state.layer[i + 1][randomNumber[i]].name.replace('.svg','');
+          }
         }
+  
+        for(var k = 0; k < (this.state.takenImage.length ); k++){
+          if(randomNumber.toString() === await this.state.takenImage[k].toString()){
+            repeated = repeated + 1;
+          }
+        }
+  
+        for(var n = 0; n < (this.state.layer.length - 1) && !stop; n++){
+          for ( var m = 0; m < this.state.layer[n+1].length; m++){
+            if (this.state.layer[n+1][m].rarity != 0 && this.state.layer[n+1][m].rarity != this.state.layer[n+1].length){
+  
+              if (randomNumber[n] == m){
+                for (var o = 0; o < (this.state.takenImage.length - 1); o++){
+                  if (randomNumber[n] == await this.state.takenImage[o+1][n]){
+                    repeated1 = repeated1 + 1;              
+                  }
+                }
+                if (repeated1 >= +this.state.layer[n+1][m].rarity * rarity){
+                  stop = true;
+                  console.log('item repeat')
+                  break;
+                }
+              }
+            } 
+            repeated1 = 0;
+          }
+        }
+        console.log('stop')
       }
+      while (stop == true || repeated >= rarity);
 
-      if (repeated < rarity){
+      if (repeated < rarity && !stop){
         this.setState({itemsName})
 
         for(var i = 0; i < (this.state.layer.length - 1); i++){
@@ -435,11 +455,10 @@ class App extends Component {
             this.setState({final});
           }
         }
-        this.state.takenImage.push(randomNumber.join(''));
+        this.state.takenImage.push(randomNumber);
         console.log('end');
-
-        break;
-      
+        
+        break; 
       } 
       else {
       console.log('repeat');
@@ -449,11 +468,15 @@ class App extends Component {
 
   async createImage(idx, prefix, description, url, rarity, items) {
 
+    var containerButton = document.getElementById("containerButton");
+    containerButton.appendChild(document.createElement("br")); 
+    while (containerButton.hasChildNodes()) {
+      containerButton.removeChild(containerButton.lastChild);
+    }
+
     await this.checkImage(rarity);
      
     const name = await this.getRandomName();
-    //console.log(name);
-
     const attributes = [];
 
     for(var i = 0; i < (this.state.layer.length - 2); i++){
@@ -464,7 +487,7 @@ class App extends Component {
     }
 
     const meta = {      
-      name: `${prefix} #${idx}`,
+      name: `${prefix} #${items - idx}`,
       description: `${description} ${name.split('-').join(' ')}`,
       image : ``,
       external_url : `${url}`,
@@ -476,10 +499,10 @@ class App extends Component {
       let image = new Image();
       image.onload = () => {
             
-        let canvas = createCanvas(300, 300);
+        let canvas = createCanvas(250, 250);
         let context = canvas.getContext('2d');
 
-        context.drawImage(image, 0, 0, 300 ,300);
+        context.drawImage(image, 0, 0);
         var png = [];
 
         png = canvas.toDataURL();
@@ -524,21 +547,17 @@ class App extends Component {
         for(var k = 0; k < (this.state.takenImage.length - 1); k++){
           if(randomNumber.toString() === this.state.takenImage[k+1].toString()){
             repeated = repeated + 1;
-            //console.log(repeated);
           }
         }
   
         for(var n = 0; n < (this.state.layer.length - 1) && !stop; n++){
           for ( var m = 0; m < this.state.layer[n+1].length; m++){
-            //console.log(this.state.takenImage[n][m])
-            //console.log(randomNumber[m])
             if (this.state.layer[n+1][m].rarity != 0 && this.state.layer[n+1][m].rarity != this.state.layer[n+1].length){
   
               if (randomNumber[n] == m){
                 for (var o = 0; o < (this.state.takenImage.length - 1); o++){
                   if (randomNumber[n] == await this.state.takenImage[o+1][n]){
                     repeated1 = repeated1 + 1;              
-                    //console.log(repeated1);
                   }
                 }
                 if (repeated1 >= +this.state.layer[n+1][m].rarity * rarity){
@@ -567,7 +586,6 @@ class App extends Component {
 
         for (i = 0; i < (this.state.layer.length - 1); i++){
           itemsName[i+1] = await this.state.layer[i+1][randomNumber[i]].name.replace('.png','');
-          //console.log(itemsName)
     
           var blob = new Blob([await this.state.layer[i+1][randomNumber[i]]]);
           var bloburl  = window.URL.createObjectURL(blob);
@@ -580,7 +598,6 @@ class App extends Component {
     
         for(i = 0; i < (this.state.layer.length - 1); i++){
           itemsName[i+1] = await this.state.layer[i+1][randomNumber[i]].name.replace('.png','');
-          //console.log(itemsName)
     
           var blob1 = new Blob([await this.state.layer[i+1][randomNumber[i]]]);
           var bloburl1  = window.URL.createObjectURL(blob1);
@@ -593,8 +610,6 @@ class App extends Component {
         this.setState({result});
           
         const name = await this.getRandomName();
-        //console.log(name);
-    
         const attributes = [];
     
         for(var j = 0; j < (this.state.layer.length - 2); j++){
@@ -625,7 +640,6 @@ class App extends Component {
 
     var JSZip = require("jszip");
     let zip = new JSZip();
-
     var img = zip.folder("Images");
 
     if(this.state.imageType == 'svg'){
@@ -650,11 +664,10 @@ class App extends Component {
 
     var JSZip = require("jszip");
     let zip = new JSZip();
-
     var file = zip.folder("JSON");
 
     if(this.state.imageType == 'svg'){
-      for (var i = 0; i < (this.state.finish.length ); i++){
+      for (var i = 0; i < (this.state.finish.length); i++){
         file.file(`${i+1}.json`, JSON.stringify(this.state.JSON[i + 1]), {base64: false });
       }
     }else {
@@ -756,7 +769,6 @@ class App extends Component {
 
   async addFields(){
     var number = this.state.number;
-    //console.log(number);
     number = number + 1;
     this.setState({number});
     this.state.press =0;
@@ -868,7 +880,6 @@ class App extends Component {
 
     }
       this.addFields = this.addFields.bind(this);
-      //this.downloadzipPNG = this.downloadzipPNG.bind(this);
   }
 
   render() {
@@ -887,7 +898,6 @@ class App extends Component {
           </div>
           </nav>
           
-
           <div className="container-fluid mt-5 text-center">
               <br></br>
                 <h1>Welcome to Dapps</h1>
