@@ -605,7 +605,7 @@ class App extends Component {
         }
     
         const meta = {      
-          name: `${prefix} #${idx}`,
+          name: `${prefix} #${items - idx}`,
           description: `${description} ${name.split('-').join(' ')}`,
           image : ``,
           external_url : `${url}`,
@@ -701,39 +701,44 @@ class App extends Component {
 
     var container = document.getElementById("containera");
     
-    if (this.state.click <this.state.layer[this.state.number].length){
+    if (this.state.click == 0){
 
-        container.appendChild(document.createTextNode("Item " + (this.state.click+1) + ": "));   
+      for (var i = 0; i< this.state.layer[this.state.layerNumber].length; i++){
+        
+        container.appendChild(document.createTextNode("Item " + (i+1) + ": "));   
 
         var input2 = document.createElement("input");
   
-        input2.id = 'Item' + this.state.click;
-        input2.name = 'item' + this.state.click;
+        input2.id = 'Item' + i;
+        input2.name = 'item' + i;
         input2.type = 'number';
         input2.min = '1';
-        input2.max = +this.state.layer[this.state.number].length;
-        input2.defaultValue = +this.state.layer[1][this.state.click].rarity;
+        input2.max = +this.state.layer[this.state.layerNumber].length;
+        input2.defaultValue = +this.state.layer[this.state.layerNumber][i].rarity;
         input2.onchange = this.itemRarity;
   
         container.appendChild(input2);  
         container.appendChild(document.createElement("br"));  
-        this.state.click++; 
+
+      }
+      this.state.click = 1; 
 
     } else {
-      for (var j = 0; j <(+this.state.layer[this.state.number].length * 3); j++){
+      for (var j = 0; j <(+this.state.layer[this.state.layerNumber].length * 3); j++){
         container.removeChild(container.lastChild);
       }
-      console.log(this.state.layer[this.state.number].length * 3)
+      console.log(this.state.layer[this.state.layerNumber].length * 3)
       this.state.click = 0;
     }
   }
 
   itemRarity = event => {
-    var itemRarity = 0;
     var itemCombinations = this.state.rarityCombinations;
-
-    itemRarity = event.target.value;
-    this.state.layer[1][this.state.click - 1]["rarity"] = itemRarity;
+    for (var i = 0; i< this.state.layer[this.state.layerNumber].length; i++){
+      if(document.getElementById(`Item${i}`).value != +this.state.layer[this.state.layerNumber][i].rarity){
+        this.state.layer[this.state.layerNumber][i]["rarity"] = event.target.value;
+      }    
+    }
   
     for (var z = 0; z < (this.state.layer.length-1); z++){
       var temp = 0;
@@ -754,7 +759,6 @@ class App extends Component {
     //console.log(number);
     number = number + 1;
     this.setState({number});
-    var click = 0;
     this.state.press =0;
 
     var container = document.getElementById("container");
@@ -789,59 +793,12 @@ class App extends Component {
       }
     }
 
-    const fillDetails = () => {
-      if (click <this.state.layer[number].length){
- 
-        container.appendChild(document.createTextNode("Item " + (click+1) + ": "));   
-    
-        var input2 = document.createElement("input");
-    
-        input2.id = 'Item' + click;
-        input2.name = 'item' + click;
-        input2.type = 'number';
-        input2.defaultValue = +this.state.layer[number][click].rarity;
-        input2.onchange = itemRarity;
-    
-        container.appendChild(input2);  
-        container.appendChild(document.createElement("br"));  
-        click++; 
-
-      } else {
-        for (var j = 0; j <(+this.state.layer[number].length * 3); j++){
-          container.removeChild(container.lastChild);
-        }
-        console.log(this.state.layer[number].length * 3)
-        click = 0;
-      }
-    }
-
-    const itemRarity = event => {
-      var itemRarity = 0;
-
-      var itemCombinations = this.state.rarityCombinations;
-      itemRarity = event.target.value;
-      this.state.layer[number][click-1]["rarity"] = itemRarity;     
-      
-      for (var z = 0; z < (this.state.layer.length-1); z++){
-        var temp = 0;
-        for (var n = 0; n < this.state.layer[z+1].length ; n++){
-          temp = +temp + +this.state.layer[z+1][n].rarity;
-        }
-        if ( temp < itemCombinations){
-          itemCombinations = temp;
-        }
-      }
-      this.setState({itemCombinations})  
-      console.log(this.state.layer)
-
-    }
-
-    container.appendChild(document.createTextNode("Layer " + (number - 1) + " : "));
+    container.appendChild(document.createTextNode("Layer " + (number) + " : "));
 
     var input0 = document.createElement("input");
 
-    input0.id = 'Layer' + number;
-    input0.name = 'layer' + number;
+    input0.id = 'Layer' + number+1;
+    input0.name = 'layer' + number+1;
     input0.type = 'text';
     input0.placeholder = 'Enter Layer Name..'
     input0.onchange = inputLayerName;
@@ -861,16 +818,6 @@ class App extends Component {
     container.appendChild(input1); 
     container.appendChild(document.createElement("br"));   
 
-    var details = document.createElement("a");
-
-    details.href = "#";
-    details.text = "Fill item rarity..";
-    details.id = "filldetails";
-    details.onclick = fillDetails;
-
-    container.appendChild(details); 
-
-    container.appendChild(document.createElement("br"));   
     container.appendChild(document.createElement("br"));   
   }
 
@@ -878,6 +825,10 @@ class App extends Component {
     this.state.rarity = event.target.value;
   }
 
+  layerNumber = event => {
+    this.state.layerNumber = event.target.value;
+    console.log(this.state.layerNumber)
+  }
 
   constructor(props) {
     super(props)
@@ -912,7 +863,8 @@ class App extends Component {
       end: 0,
       click: 0,
       press: 0,
-      start: 0
+      start: 0,
+      layerNumber: 0
 
     }
       this.addFields = this.addFields.bind(this);
@@ -1101,16 +1053,24 @@ class App extends Component {
                                         onChange={this.inputLayer}/> 
 
                                 <br></br> 
-                                
-                                <label id = "filldetails" onClick={this.fillDetails} style={{color:"rgb(22, 84, 218)"}}><u>Fill item Rarity..</u></label>
-                                <div id="containera"/>
                                 <br></br> 
 
                                 <div id="container"/>
-                                <br></br>
                                 <button id="addFields" onClick={this.addFields} className='btn btn-primary'>Add Layer</button> 
 
                                 <br></br> 
+                                <br></br> 
+                                <h5 >Fill Item Details: </h5> 
+
+                                <label htmlFor="layerNumber" style={{float: "center"}}>Layer : </label>
+                                      <input
+                                        id='layerNumber' 
+                                        type='number'
+                                        onChange={this.layerNumber}/> 
+
+                                <br></br> 
+                                <label id = "filldetails" onClick={this.fillDetails} style={{color:"rgb(22, 84, 218)"}}><u>Fill item Rarity..</u></label>
+                                <div id="containera"/>
                                 <br></br> 
 
                                 <form method="post" encType="multipart/form-data" action="#" onSubmit={(e) => {
@@ -1180,7 +1140,6 @@ class App extends Component {
                                       className="form-control input-sm"
                                       min ="1"
                                       max = {this.state.itemCombinations}
-                                      onChange={this.itemsChange}
                                       required/> 
                               
                                 <br></br>
