@@ -153,7 +153,9 @@ class App extends Component {
         
       this.state.name = name;
       this.state.strength = strength;
-      this.state.ipfshash = res.data.IpfsHash;
+
+      const ipfshash = res.data.IpfsHash;
+      this.setState({ipfshash});
 
       console.log(res.data.IpfsHash);
     };
@@ -194,7 +196,8 @@ class App extends Component {
       });
 
       console.log(res.data.IpfsHash);
-      this.state.ipfshash2 = res.data.IpfsHash;
+      const ipfshash2 = res.data.IpfsHash;
+      this.setState({ipfshash2});
     }
       pinJSONToIPFS();  
   } 
@@ -856,6 +859,9 @@ class App extends Component {
       second: '0',
       name: 'undefined',
       description: 'undefined',
+
+      ipfshash: '-',
+      ipfshash2: '-',
 
       number : 0,
       rarity : 1,
